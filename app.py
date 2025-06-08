@@ -5,13 +5,13 @@ from utils.config import SERVER_CONFIG
 
 app = Flask(__name__)
 mail = Mail(app)
-s = Scheduler(mail, app)  # 传入app实例
+s = Scheduler(mail,app)  # 传入app实例
 
 @app.route('/')
 def index():
     return """
     <h1>姿势监测系统</h1>
-    <p>使用 POST 请求发送图片到 /analyze 端点进行分析</p>
+    <p>发送图片进行分析</p>
     <form action="/analyze" method="post" enctype="multipart/form-data">
         <input type="file" name="image">
         <input type="submit" value="分析姿势">

@@ -9,7 +9,7 @@ class Scheduler:
     def __init__(self, mail, app):
         self.analyzer = Analyzer()
         self.reporter = ReportGenerator()
-        self.emailer = Emailer(mail)
+        self.emailer = Emailer(mail,app)
         self.anomaly_count = 0
         self.camera = CameraCapture()  # 持久化摄像头对象
         self.app = app  # 保存Flask app实例
