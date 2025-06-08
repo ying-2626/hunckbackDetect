@@ -34,6 +34,8 @@ def video_feed():
 def health_check():
     return jsonify({'status': 'ok'})
 
+
+
 def start_background_tasks():
     s.start()
 
