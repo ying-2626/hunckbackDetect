@@ -8,12 +8,48 @@
 </head>
 <body>
     <h1>姿势监测系统</h1>
-    <p>发送图片进行分析</p>
-    <form action="/analyze" method="post" enctype="multipart/form-data">
-        <input type="file" name="image">
+    <p>上传图片进行分析</p>
+    <form id="analyze-form" action="/analyze" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" id="image-input">
         <input type="submit" value="分析姿势">
     </form>
+    <div id="analyze-result"></div>
     <img src="http://localhost:5000/video_feed" alt="实时检测画面" style="width: 900px;">
+
+    <script>
+    document.getElementById('analyze-form').onsubmit = function(e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+        var resultDiv = document.getElementById('analyze-result');
+        resultDiv.innerHTML = "正在分析，请稍候...";
+        fetch('http://localhost:5000/analyze', {
+            method: 'POST',
+            body: formData
+        })
+        .then(resp => {
+             console.log("原始响应对象：", resp);
+            if (!resp.ok) {
+                return resp.json().then(data => { throw new Error(data.error || "分析失败"); });
+            }
+            return resp.json();
+        })
+        .then(data => {
+            console.log("后端返回数据：", data);
+            const imgUrl = `/static/tmp/${encodeURIComponent(data.filename)}`;
+            resultDiv.innerHTML = `
+                <h2>分析结果</h2>
+                <p>Ear-Shoulder: ${data.ear_shoulder}</p>
+                <p>Shoulder-Hip: ${data.shoulder_hip}</p>
+                <p>姿势状态: ${data.posture_status}</p>
+                <a href="${imgUrl}" target="_blank">下载标注图片</a><br>
+                <img src="${imgUrl}" style="max-width:600px;">
+            `;
+        })
+        .catch(err => {
+            console.error("分析异常：", err);
+            resultDiv.innerHTML = "分析失败：" + err.message;
+        });
+    };
+    </script>
 </body>
 </html>
-

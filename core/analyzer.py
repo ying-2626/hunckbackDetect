@@ -1,6 +1,13 @@
 import cv2, csv, datetime, time, os
 import mediapipe as mp
 from utils.config import POSTURE_THRESHOLD, LOG_FILE
+from core.preprocessing import (
+    correct_perspective,
+    rotate_and_scale,
+    histogram_equalization,
+    denoise,
+    sharpen
+)
 
 mp_pose = mp.solutions.pose
 mp_drawing = mp.solutions.drawing_utils
@@ -13,6 +20,7 @@ class Analyzer:
         self.pose = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
         self.ensure_log_dir()
         self.ensure_log_header()
+        self.enable_preprocessing = False  # 实时分析默认关闭预处理
 
     def ensure_log_dir(self):
         log_path = './logs'
@@ -33,7 +41,16 @@ class Analyzer:
             except Exception as e:
                 print(f"文件初始化失败: {str(e)}")
 
-    def analyze(self, frame):
+    def analyze(self, frame, src_points=None, dst_points=None, angle=0, scale=1.0, preprocessing=False):
+        # 仅图片分析时开启预处理
+        if preprocessing:
+            if src_points is not None and dst_points is not None:
+                frame = correct_perspective(frame, src_points, dst_points)
+            frame = rotate_and_scale(frame, angle, scale)
+            frame = histogram_equalization(frame)
+            frame = denoise(frame)
+            frame = sharpen(frame)
+
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image.flags.writeable = False
         results = self.pose.process(image)
