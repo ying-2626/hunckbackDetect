@@ -5,19 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c4c00416-9f36-432d-ae86-f4a4231c8d7b" name="Changes" comment="摄像头持久化capture和邮件发送多线程冲突">
-      <change afterPath="$PROJECT_DIR$/.idea/hunchback.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/analyzer.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/capture.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/core/scheduler.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/models/report_generator.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/config.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utils/emailer.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/logs/posture_log.csv" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,6 +33,12 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/ying-2626/hunckbackDetect.git",
+    "accountId": "012bd625-b384-4f58-b4d4-0793d473d018"
+  }
+}]]></component>
   <component name="ProjectColorInfo"><![CDATA[{
   "associatedIndex": 1
 }]]></component>
@@ -92,7 +86,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1749375445519</updated>
-      <workItem from="1749375446759" duration="9101000" />
+      <workItem from="1749375446759" duration="9432000" />
     </task>
     <task id="LOCAL-00001" summary="摄像头持久化capture和邮件发送多线程冲突">
       <option name="closed" value="true" />
@@ -102,7 +96,23 @@
       <option name="project" value="LOCAL" />
       <updated>1749384597363</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="摄像头持久化capture和邮件发送多线程冲突">
+      <option name="closed" value="true" />
+      <created>1749384880794</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1749384880794</updated>
+    </task>
+    <task id="LOCAL-00003" summary="摄像头持久化capture和邮件发送多线程冲突">
+      <option name="closed" value="true" />
+      <created>1749384945306</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1749384945306</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
