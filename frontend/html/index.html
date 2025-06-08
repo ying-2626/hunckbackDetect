@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SittingWatch实时姿势监测系统</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../css/index.css">
+</head>
+<body>
+    <h1>姿势监测系统</h1>
+    <p>发送图片进行分析</p>
+    <form action="/analyze" method="post" enctype="multipart/form-data">
+        <input type="file" name="image">
+        <input type="submit" value="分析姿势">
+    </form>
+    <img src="http://localhost:5000/video_feed" alt="实时检测画面" style="width: 900px;">
+</body>
+</html>
+

@@ -1,28 +1,39 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_mail import Mail
+import cv2
+
+from core.analyzer import Analyzer
+from core.capture import CameraCapture
 from core.scheduler import Scheduler
 from utils.config import SERVER_CONFIG
 
 app = Flask(__name__)
 mail = Mail(app)
-s = Scheduler(mail,app)  # 传入app实例
+s = Scheduler(mail, app)  # 传入app实例
 
-@app.route('/')
-def index():
-    return """
-    <h1>姿势监测系统</h1>
-    <p>发送图片进行分析</p>
-    <form action="/analyze" method="post" enctype="multipart/form-data">
-        <input type="file" name="image">
-        <input type="submit" value="分析姿势">
-    </form>
-    """
+analyzer_instance = Analyzer()  # 全局Analyzer实例，避免重复初始化
+
+
+@app.route('/video_feed')
+def video_feed():
+    def generate():
+        camera = CameraCapture()
+        while True:
+            frame = camera.get_frame()
+            # 分析并绘制关键点和状态
+            image, posture_status, metrics = analyzer_instance.analyze(frame)
+            # 编码为JPEG
+            ret, jpeg = cv2.imencode('.jpg', image)
+            if not ret:
+                continue
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+    return Response(generate(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({'status':'ok'})
+    return jsonify({'status': 'ok'})
 
-# start background scheduler on app start
 def start_background_tasks():
     s.start()
 
