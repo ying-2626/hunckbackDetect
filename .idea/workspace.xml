@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c4c00416-9f36-432d-ae86-f4a4231c8d7b" name="Changes" comment="">
+    <list default="true" id="c4c00416-9f36-432d-ae86-f4a4231c8d7b" name="Changes" comment="摄像头持久化capture和邮件发送多线程冲突">
       <change afterPath="$PROJECT_DIR$/.idea/hunchback.iml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
@@ -58,6 +58,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Python.analyzer.executor": "Run",
     "Python.app.executor": "Run",
     "Python.config.executor": "Run",
@@ -65,6 +66,7 @@
     "Python.scheduler.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -90,18 +92,31 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1749375445519</updated>
-      <workItem from="1749375446759" duration="8654000" />
+      <workItem from="1749375446759" duration="9101000" />
     </task>
+    <task id="LOCAL-00001" summary="摄像头持久化capture和邮件发送多线程冲突">
+      <option name="closed" value="true" />
+      <created>1749384597363</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1749384597363</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="摄像头持久化capture和邮件发送多线程冲突" />
+    <option name="LAST_COMMIT_MESSAGE" value="摄像头持久化capture和邮件发送多线程冲突" />
+  </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hunchback$emailer.coverage" NAME="emailer Coverage Results" MODIFIED="1749382678642" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
     <SUITE FILE_PATH="coverage/hunchback$config.coverage" NAME="config Coverage Results" MODIFIED="1749380308957" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
-    <SUITE FILE_PATH="coverage/hunchback$analyzer.coverage" NAME="analyzer Coverage Results" MODIFIED="1749381431086" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/core" />
-    <SUITE FILE_PATH="coverage/hunchback$app.coverage" NAME="app Coverage Results" MODIFIED="1749384054964" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hunchback$analyzer.coverage" NAME="analyzer Coverage Results" MODIFIED="1749384273987" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/core" />
+    <SUITE FILE_PATH="coverage/hunchback$app.coverage" NAME="app Coverage Results" MODIFIED="1749384283119" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hunchback$scheduler.coverage" NAME="scheduler Coverage Results" MODIFIED="1749382842721" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/core" />
   </component>
 </project>
