@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c4c00416-9f36-432d-ae86-f4a4231c8d7b" name="Changes" comment="新增用户上传图片（预处理+标注图片返回可下载+分析结果）" />
+    <list default="true" id="c4c00416-9f36-432d-ae86-f4a4231c8d7b" name="Changes" comment="删除utils/logs">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -107,7 +109,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1749375445519</updated>
-      <workItem from="1749375446759" duration="30611000" />
+      <workItem from="1749375446759" duration="32443000" />
     </task>
     <task id="LOCAL-00001" summary="摄像头持久化capture和邮件发送多线程冲突">
       <option name="closed" value="true" />
@@ -189,7 +191,15 @@
       <option name="project" value="LOCAL" />
       <updated>1749407127033</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="删除utils/logs">
+      <option name="closed" value="true" />
+      <created>1749407679843</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1749407679843</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -201,7 +211,8 @@
     <MESSAGE value="修改邮件报告内容" />
     <MESSAGE value="更改路由接口" />
     <MESSAGE value="新增用户上传图片（预处理+标注图片返回可下载+分析结果）" />
-    <option name="LAST_COMMIT_MESSAGE" value="新增用户上传图片（预处理+标注图片返回可下载+分析结果）" />
+    <MESSAGE value="删除utils/logs" />
+    <option name="LAST_COMMIT_MESSAGE" value="删除utils/logs" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hunchback$emailer.coverage" NAME="emailer Coverage Results" MODIFIED="1749388019635" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
