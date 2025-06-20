@@ -22,7 +22,7 @@ class Scheduler:
         try:
             while True:
                 frame = self.camera.get_frame()
-                _, status, metrics = self.analyzer.analyze(frame)
+                _, status, _, metrics = self.analyzer.analyze(frame)
                 self.analyzer.log(status, metrics)
 
                 if status:

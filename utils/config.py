@@ -8,7 +8,7 @@ ANOMALY_THRESHOLD = ANOMALY_WINDOW // SAMPLING_INTERVAL
 
 EMAIL_FROM = 'SittingWatch@qq.com'
 EMAIL_PASSWORD = 'urjlznsxfcxtbchi'
-EMAIL_TO = '2528691862@qq.com'
+EMAIL_TO = ''  # 动态指定
 MAIL_SERVER = 'smtp.qq.com'
 MAIL_PORT = 465
 MAIL_USE_SSL = True # 使用SSL

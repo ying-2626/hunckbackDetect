@@ -3,9 +3,10 @@ from flask_mail import Mail
 import cv2
 import numpy as np
 import os
-import tempfile
 import time
 from flask_cors import CORS
+import json
+import hashlib
 
 from core.analyzer import Analyzer
 from core.capture import CameraCapture
@@ -19,6 +20,62 @@ s = Scheduler(mail, app)  # 传入app实例
 
 analyzer_instance = Analyzer()  # 全局Analyzer实例，避免重复初始化
 
+USERS_FILE = os.path.join(os.path.dirname(__file__), "users.json")
+
+def load_users():
+    if not os.path.exists(USERS_FILE):
+        return {}
+    with open(USERS_FILE, "r", encoding="utf-8") as f:
+        try:
+            return json.load(f)
+        except:
+            return {}
+
+
+def save_users(users):
+    with open(USERS_FILE, "w", encoding="utf-8") as f:
+        json.dump(users, f, ensure_ascii=False, indent=2)
+
+
+def hash_pwd(pwd):
+    return hashlib.sha256(pwd.encode('utf-8')).hexdigest()
+
+
+@app.route('/api/register', methods=['POST'])
+def api_register():
+    data = request.get_json()
+
+    print("收到登录请求")  # 添加调试输出
+    print("请求头:", request.headers)
+
+    name = data.get('name', '').strip()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    if not name or not email or not password:
+        return jsonify({'error': '信息不完整'}), 400
+    users = load_users()
+    if email in users:
+        return jsonify({'error': '该邮箱已注册'}), 400
+    users[email] = {
+        'name': name,
+        'email': email,
+        'password': hash_pwd(password)
+    }
+    save_users(users)
+    return jsonify({'email': email})
+
+
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.get_json()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    users = load_users()
+    user = users.get(email)
+    if not user or user['password'] != hash_pwd(password):
+        return jsonify({'error': '邮箱或密码错误'}), 400
+    return jsonify({'email': email})
+
 
 @app.route('/video_feed')
 def video_feed():
@@ -27,7 +84,9 @@ def video_feed():
         while True:
             frame = camera.get_frame()
             # 实时分析不做预处理
-            image, posture_status, metrics = analyzer_instance.analyze(frame, preprocessing=False)
+            image, posture_status, hunchback_status, metrics = analyzer_instance.analyze(frame, preprocessing=False)
+            # image, posture_status, metrics = analyzer_instance.analyze(frame, preprocessing=False)
+
             ret, jpeg = cv2.imencode('.jpg', image)
             if not ret:
                 continue
@@ -56,7 +115,7 @@ def analyze_image():
         return jsonify({'error': "图片格式错误"}), 400
 
     # 进行预处理和姿势分析（不写入日志）
-    image, posture_status, metrics = analyzer_instance.analyze(img, preprocessing=True)
+    image, posture_status, hunchback_status, metrics = analyzer_instance.analyze(img, preprocessing=True)
 
     # 保存标注后图片到 static/tmp 目录
     tmp_dir = os.path.join(os.path.dirname(__file__), "static", "tmp")
@@ -72,6 +131,8 @@ def analyze_image():
         'ear_shoulder': metrics['ear_shoulder'],
         'shoulder_hip': metrics['shoulder_hip'],
         'posture_status': '异常' if posture_status else '正常',
+        'hunchback_status': '异常' if hunchback_status else '正常',
+        'spine_angle': metrics.get('spine_angle', ''),
         'filename': filename
     })
 

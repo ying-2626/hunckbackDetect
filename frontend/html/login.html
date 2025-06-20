@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SittingWatch - 智能坐姿监测系统</title>
+     <link rel="stylesheet" href="../css/login.css">
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+    </div>
+
+    <div class="container">
+        <!-- 左侧介绍区域 -->
+        <div class="left-panel">
+            <h1 class="app-title">SittingWatch</h1>
+            <p class="app-subtitle">实时坐姿监测，守护您的健康姿势</p>
+
+            <div class="features">
+                <div class="feature">
+                    <i class="fas fa-video">📷</i>
+                    <div class="feature-text">
+                        <h3>实时姿态分析</h3>
+                        <p>通过摄像头实时检测坐姿问题</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <i class="fas fa-bell">🔔</i>
+                    <div class="feature-text">
+                        <h3>智能提醒系统</h3>
+                        <p>发现不良姿势立即提醒</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <i class="fas fa-chart-line">📊</i>
+                    <div class="feature-text">
+                        <h3>健康数据报告</h3>
+                        <p>每日、每周坐姿分析报告</p>
+                    </div>
+                </div>
+
+                <div class="feature">
+                    <i class="fas fa-user-friends">💻</i>
+                    <div class="feature-text">
+                        <h3>多设备支持</h3>
+                        <p>电脑、平板、手机多平台使用</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧表单区域 -->
+        <div class="right-panel">
+            <div class="form-container">
+                <div class="form-header" id="form-header">
+                    <h2>欢迎使用SittingWatch</h2>
+                </div>
+
+                <div class="tabs">
+                    <div class="tab active" data-tab="login">登录账户</div>
+                    <div class="tab" data-tab="register">注册账户</div>
+                </div>
+
+                <!-- 登录表单 -->
+                <form class="form active" id="login-form">
+                    <div class="form-group">
+                        <label for="login-email">电子邮箱</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" class="form-control" id="login-email" placeholder="请输入您的邮箱" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login-password">密码</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" class="form-control" id="login-password" placeholder="请输入密码" required>
+                            <i class="fas fa-eye password-toggle"></i>
+                        </div>
+                    </div>
+
+                    <div class="options">
+                        <div class="remember">
+                            <input type="checkbox" id="remember-me">
+                            <label for="remember-me">记住我</label>
+                        </div>
+                        <a href="#" class="forgot-password">忘记密码?</a>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">登录</button>
+
+
+                    <p class="signup-link">还没有账户? <a href="#" id="go-to-register">立即注册</a></p>
+                </form>
+
+                <!-- 注册表单 -->
+                <form class="form" id="register-form">
+                    <div class="form-group">
+                        <label for="register-name">用户名</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-user"></i>
+                            <input type="text" class="form-control" id="register-name" placeholder="请输入用户名" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-email">电子邮箱</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" class="form-control" id="register-email" placeholder="请输入邮箱" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-password">密码</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" class="form-control" id="register-password" placeholder="设置密码 (至少8位)" required>
+                            <i class="fas fa-eye password-toggle"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="register-confirm">确认密码</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" class="form-control" id="register-confirm" placeholder="确认您的密码" required>
+                            <i class="fas fa-eye password-toggle"></i>
+                        </div>
+                    </div>
+
+
+
+                    <button type="submit" class="btn btn-primary">创建账户</button>
+
+                    <p class="signup-link">已有账户? <a href="#" id="go-to-login">立即登录</a></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 标签切换功能
+        const tabs = document.querySelectorAll('.tab');
+        const forms = document.querySelectorAll('.form');
+        const formHeader = document.getElementById('form-header');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // 移除所有标签和表active类
+                tabs.forEach(t => t.classList.remove('active'));
+                forms.forEach(f => f.classList.remove('active'));
+
+                // 为当前标签添加active类
+                tab.classList.add('active');
+
+                // 显示对应表单
+                const tabType = tab.getAttribute('data-tab');
+                document.getElementById(`${tabType}-form`).classList.add('active');
+
+                // 切换到注册时隐藏欢迎标题，切换到登录时显示
+                if (tabType === 'register') {
+                    formHeader.style.display = 'none';
+                } else {
+                    formHeader.style.display = 'block';
+                }
+            });
+        });
+
+        // 登录/注册切换链接
+        document.getElementById('go-to-register').addEventListener('click', (e) => {
+            e.preventDefault();
+            tabs.forEach(t => t.classList.remove('active'));
+            forms.forEach(f => f.classList.remove('active'));
+
+            document.querySelector('.tab[data-tab="register"]').classList.add('active');
+            document.getElementById('register-form').classList.add('active');
+            // 隐藏欢迎标题
+            formHeader.style.display = 'none';
+        });
+
+        document.getElementById('go-to-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            tabs.forEach(t => t.classList.remove('active'));
+            forms.forEach(f => f.classList.remove('active'));
+
+            document.querySelector('.tab[data-tab="login"]').classList.add('active');
+            document.getElementById('login-form').classList.add('active');
+            // 显示欢迎标题
+            formHeader.style.display = 'block';
+        });
+
+        // 密码显示/隐藏功能
+        const passwordToggles = document.querySelectorAll('.password-toggle');
+
+        passwordToggles.forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const input = toggle.previousElementSibling;
+                const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                input.setAttribute('type', type);
+
+                toggle.classList.toggle('fa-eye');
+                toggle.classList.toggle('fa-eye-slash');
+            });
+        });
+
+        // 登录表单提交处理
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            const msg = document.createElement('div');
+            msg.style.textAlign = 'center';
+            msg.style.margin = '10px 0';
+            msg.style.color = '#f44336';
+
+            // 移除旧提示
+            const oldMsg = document.getElementById('login-msg');
+            if (oldMsg) oldMsg.remove();
+            msg.id = 'login-msg';
+
+            try {
+                // 使用绝对路径并指定端口，确保请求发往 Flask 后端
+                const resp = await fetch('http://localhost:5000/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                // 先检查HTTP状态码
+                if (!resp.ok) {
+                    const errorData = await resp.json();
+                    throw new Error(errorData.error || '登录失败');
+                }
+
+                const data = await resp.json();
+                localStorage.setItem('user_email', data.email);
+                window.location.href = 'index.html';
+            } catch (err) {
+                msg.textContent = '登录错误，请重试';
+                document.getElementById('login-form').prepend(msg);
+            }
+        });
+
+        // 注册表单提交处理
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('register-name').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const password = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm').value;
+            const msg = document.createElement('div');
+            msg.style.textAlign = 'center';
+            msg.style.margin = '10px 0';
+            msg.style.color = '#f44336';
+
+            // 移除旧提示
+            const oldMsg = document.getElementById('register-msg');
+            if (oldMsg) oldMsg.remove();
+            msg.id = 'register-msg';
+
+            if (password !== confirm) {
+                msg.textContent = '两次密码不一致';
+                document.getElementById('register-form').prepend(msg);
+                return;
+            }
+
+            try {
+                // 使用绝对路径并指定端口，确保请求发往 Flask 后端
+                const resp = await fetch('http://localhost:5000/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+                const data = await resp.json();
+                if (!resp.ok) {
+                    msg.textContent = data.error || '注册失败';
+                    document.getElementById('register-form').prepend(msg);
+                    return;
+                }
+                localStorage.setItem('user_email', data.email);
+                window.location.href = 'index.html';
+            } catch (err) {
+                msg.textContent = '注册错误，请重试';
+                document.getElementById('register-form').prepend(msg);
+            }
+        });
+    </script>
+</body>
+</html>

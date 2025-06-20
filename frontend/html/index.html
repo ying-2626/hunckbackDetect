@@ -1,55 +1,323 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>SittingWatch实时姿势监测系统</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SittingWatch - 实时姿势监测系统</title>
     <link rel="stylesheet" href="../css/index.css">
 </head>
 <body>
-    <h1>姿势监测系统</h1>
-    <p>上传图片进行分析</p>
-    <form id="analyze-form" action="/analyze" method="post" enctype="multipart/form-data">
-        <input type="file" name="image" id="image-input">
-        <input type="submit" value="分析姿势">
-    </form>
-    <div id="analyze-result"></div>
-    <img src="http://localhost:5000/video_feed" alt="实时检测画面" style="width: 900px;">
+    <nav class="navbar">
+        <div class="logo">SittingWatch</div>
+        <ul class="nav-links">
+            <li><a href="#" class="active">首页</a></li>
+            <li><a href="https://github.com/ying-2626/hunckbackDetect">使用指南</a></li>
+            <li><a href="#">数据分析</a></li>
+            <li><a href="#">个人账号</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>智能坐姿监测系统</h1>
+            <p>实时监测您的坐姿状态，预防不良姿势带来的健康问题</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" id="live-tab">实时监控</div>
+            <div class="tab" id="upload-tab">图片分析</div>
+        </div>
+
+        <div id="live-content" class="content-section">
+            <div class="card">
+                <h2>实时姿势监测</h2>
+                <p>系统正在通过摄像头实时监测您的坐姿，当检测到不良姿势时会立即提醒您。</p>
+
+                <div class="live-feed-container">
+                    <img src="http://localhost:5000/video_feed" id="live-feed" alt="实时检测画面">
+                </div>
+
+                <div class="camera-controls">
+                    <button class="btn btn-primary" id="start-btn">
+                        <i>▶</i> 开始监测
+                    </button>
+                    <button class="btn btn-outline" id="pause-btn">
+                        <i>⏸</i> 暂停监测
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="upload-content" class="content-section" style="display:none;">
+            <div class="card">
+                <h2>图片姿势分析</h2>
+                <p>上传一张包含人物的图片，系统将分析图片中的姿势并给出评估报告。</p>
+
+                <div class="upload-container">
+                    <form id="analyze-form">
+                        <div class="form-group">
+                            <div class="file-input-container" id="file-drop-area">
+                                <i>📁</i>
+                                <p>拖放图片到此处或点击选择文件</p>
+                                <p class="small">支持 JPG, PNG 格式，最大 5MB</p>
+                                <input type="file" name="image" id="image-input" accept="image/*" required>
+                                <div id="file-name"></div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width:auto;display:block;margin:0 auto;text-align:center;">
+                            <span style="display:inline-block;width:100%;text-align:center;">分析姿势</span>
+                        </button>
+                    </form>
+
+                    <div id="analyze-result">
+
+                        <div class="result-image">
+                            <h3>姿势标记图</h3>
+                            <img src="" alt="姿势分析结果" class="result-img">
+                            <a href="#" download="姿势分析结果.jpg" class="btn btn-outline download-link">
+                                <i>⬇️</i> 下载标记图
+                            </a>
+                        </div>
+
+                        <div class="report-actions">
+                            <button class="btn btn-primary download-report">
+                                <i>📥</i> 下载完整报告
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>SittingWatch 智能坐姿监测系统 | 让健康姿势成为习惯</p>
+    </div>
 
     <script>
-    document.getElementById('analyze-form').onsubmit = function(e) {
-        e.preventDefault();
-        var formData = new FormData(this);
-        var resultDiv = document.getElementById('analyze-result');
-        resultDiv.innerHTML = "正在分析，请稍候...";
-        fetch('http://localhost:5000/analyze', {
-            method: 'POST',
-            body: formData
-        })
-        .then(resp => {
-             console.log("原始响应对象：", resp);
-            if (!resp.ok) {
-                return resp.json().then(data => { throw new Error(data.error || "分析失败"); });
-            }
-            return resp.json();
-        })
-        .then(data => {
-            console.log("后端返回数据：", data);
-            const imgUrl = `/static/tmp/${encodeURIComponent(data.filename)}`;
-            resultDiv.innerHTML = `
-                <h2>分析结果</h2>
-                <p>Ear-Shoulder: ${data.ear_shoulder}</p>
-                <p>Shoulder-Hip: ${data.shoulder_hip}</p>
-                <p>姿势状态: ${data.posture_status}</p>
-                <a href="${imgUrl}" target="_blank">下载标注图片</a><br>
-                <img src="${imgUrl}" style="max-width:600px;">
-            `;
-        })
-        .catch(err => {
-            console.error("分析异常：", err);
-            resultDiv.innerHTML = "分析失败：" + err.message;
+        // 切换标签页功能
+        document.getElementById('live-tab').addEventListener('click', function() {
+            document.getElementById('live-content').style.display = 'block';
+            document.getElementById('upload-content').style.display = 'none';
+            document.getElementById('live-tab').classList.add('active');
+            document.getElementById('upload-tab').classList.remove('active');
         });
-    };
+
+        document.getElementById('upload-tab').addEventListener('click', function() {
+            document.getElementById('upload-content').style.display = 'block';
+            document.getElementById('live-content').style.display = 'none';
+            document.getElementById('upload-tab').classList.add('active');
+            document.getElementById('live-tab').classList.remove('active');
+        });
+
+        // 文件上传交互
+        const fileInput = document.getElementById('image-input');
+        const fileName = document.getElementById('file-name');
+        const dropArea = document.getElementById('file-drop-area');
+        const analyzeForm = document.getElementById('analyze-form');
+        const analyzeResult = document.getElementById('analyze-result');
+
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length) {
+                fileName.textContent = '已选择: ' + e.target.files[0].name;
+            }
+        });
+
+        // 拖放文件功能
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#4A6D7A';
+            dropArea.style.backgroundColor = 'rgba(74, 109, 122, 0.1)';
+        });
+
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = '#E2E8F0';
+            dropArea.style.backgroundColor = '#F5F8FA';
+        });
+
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#E2E8F0';
+            dropArea.style.backgroundColor = '#F5F8FA';
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                fileName.textContent = '已选择: ' + e.dataTransfer.files[0].name;
+            }
+        });
+
+        // 点击区域触发文件选择（防止重复弹窗和重复绑定）
+        dropArea.addEventListener('click', (e) => {
+            // 只在点击容器本身时触发，点击 input 不触发
+            if (e.target === dropArea) {
+                fileInput.click();
+            }
+        });
+
+        // 防止重复绑定 submit 事件
+        if (!analyzeForm.dataset.bound) {
+            analyzeForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                console.log("表单提交事件触发"); // 调试日志
+
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('请选择一张图片进行分析');
+                    return;
+                }
+
+                // 显示加载状态
+                    document.querySelector('#analyze-result').style.display = 'block';
+                    document.querySelector('#analyze-result').innerHTML = `
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>正在分析您的姿势，请稍候...</p>
+                        </div>
+                    `;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('image', fileInput.files[0]);
+
+                    const response = await fetch('http://localhost:5000/analyze', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    const text = await response.text();
+                    console.log("fetch响应原始文本：", text);
+
+                    const data = JSON.parse(text);
+                    console.log("解析后的JSON：", data);
+
+                    if (!response.ok) {
+                        throw new Error(data.error || `分析失败: ${response.status}`);
+                    }
+
+                    // 生成图片URL - 注意后端返回的字段是filename
+                    const imgUrl = `/static/tmp/${encodeURIComponent(data.filename)}`;
+
+                    // 显示分析结果 - 匹配后端返回的数据结构
+                    analyzeResult.innerHTML = `
+                        <h2>姿势分析结果</h2>
+                        <div class="result-grid">
+                            <div class="metric-card">
+                                <h3>低头检测</h3>
+                                <div class="status-badge ${data.posture_status === '正常' ? 'status-good' : 'status-poor'}">
+                                    ${data.posture_status}
+                                </div>
+                            </div>
+                            <div class="metric-card">
+                                <h3>驼背检测</h3>
+                                <div class="status-badge ${data.hunchback_status === '正常' ? 'status-good' : 'status-poor'}">
+                                    ${data.hunchback_status}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="analysis-summary">
+                            <h3>姿势评估</h3>
+                            <p>${data.posture_status === '正常' ?
+                                '您的坐姿状态良好，请继续保持！' :
+                                '检测到坐姿异常，建议调整姿势'} ${data.hunchback_status === '异常' ? '，存在驼背现象' : ''}</p>
+
+                            <h3>专业建议</h3>
+                            <ul>
+                                <li>调整座椅高度使双脚平放地面</li>
+                                <li>保持背部挺直，避免前倾</li>
+                                <li>调整显示器高度与视线平齐</li>
+                                <li>每30分钟起身活动一次</li>
+                            </ul>
+                        </div>
+
+                        <div class="result-image">
+                            <h3>姿势标记图</h3>
+                            <img src="${imgUrl}" alt="姿势分析结果" onerror="this.src='https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8cG9zdHVyZXx8fHx8fDE2ODc4MzYyODU&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1080'">
+                            <a href="${imgUrl}" download="姿势分析结果.jpg" class="btn btn-outline">
+                                <i>⬇️</i> 下载标记图
+                            </a>
+                        </div>
+
+                        <div class="report-actions">
+                            <button class="btn btn-primary" onclick="downloadAnalysisReport(${JSON.stringify(data).replace(/</g, '\\u003c')})">
+                                <i>📥</i> 下载完整报告
+                            </button>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error("分析异常：", error);
+                    if (error && error.stack) {
+                        console.error("异常堆栈：", error.stack);
+                    }
+                    analyzeResult.innerHTML = `
+                        <div class="error">
+                            <h3>分析失败</h3>
+                            <p>${error.message}</p>
+                            <button class="btn btn-primary" onclick="location.reload()">重试</button>
+                        </div>
+                    `;
+                }
+            });
+            analyzeForm.dataset.bound = "true";
+        }
+
+        // 修改下载报告函数 - 匹配后端数据结构
+        function downloadAnalysisReport(data) {
+            // 创建报告内容
+            const reportContent = `
+                SittingWatch 姿势分析报告
+                =========================
+
+                分析时间: ${new Date().toLocaleString()}
+
+                姿势指标:
+                -------------------------
+                耳肩距离: ${data.ear_shoulder} cm (${data.posture_status})
+                肩髋角度: ${data.shoulder_hip}° (${data.posture_status})
+                脊柱弯曲度: ${data.spine_angle}° (${data.hunchback_status})
+
+                姿势评估:
+                -------------------------
+                ${data.posture_status === '正常' ?
+                    '坐姿状态良好' :
+                    '检测到坐姿异常' + (data.hunchback_status === '异常' ? '和驼背现象' : '')}
+
+                建议:
+                -------------------------
+                1. 调整座椅高度使双脚平放地面
+                2. 背部挺直，避免前倾
+                3. 调整显示器高度与视线平齐
+                4. 每30分钟起身活动一次
+            `;
+
+            // 创建Blob对象
+            const blob = new Blob([reportContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+
+            // 创建下载链接
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `SittingWatch_Report_${new Date().toISOString().slice(0, 10)}.txt`;
+            document.body.appendChild(a);
+            a.click();
+
+            // 清理
+            setTimeout(() => {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+        }
+
+
+        // 实时监控按钮功能
+        document.getElementById('start-btn').addEventListener('click', function() {
+            alert('实时监测已启动！系统将实时分析您的坐姿。');
+        });
+
+        document.getElementById('pause-btn').addEventListener('click', function() {
+            alert('实时监测已暂停。');
+        });
     </script>
 </body>
 </html>
