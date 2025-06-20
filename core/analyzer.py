@@ -1,5 +1,6 @@
 import cv2, csv, datetime, os, math, time
 import mediapipe as mp
+import threading
 import numpy as np
 from playsound import playsound
 from utils.config import POSTURE_THRESHOLD, LOG_FILE
@@ -36,8 +37,11 @@ class Analyzer:
         self.ensure_log_dir()
         self.ensure_log_header()
         self.enable_preprocessing = False
+
         self.last_alarm_time = 0
         self.alarm_cooldown = 3  # 警报冷却时间（秒）
+        self.alert_lock = threading.Lock()  # 新增警报锁
+        self.active_alerts = set()  # 跟踪当前活动的警报类型
 
     def ensure_log_dir(self):
         log_path = './logs'
@@ -80,18 +84,36 @@ class Analyzer:
         except:
             return 0
 
-    def detect_hunchback(self, spine_angle):
-        return spine_angle > HUNCHBACK_ANGLE_THRESHOLD
 
     def trigger_alert(self, alert_type="hunchback"):
+        """非阻塞方式触发警报"""
         current_time = time.time()
-        if current_time - self.last_alarm_time > self.alarm_cooldown:
+
+        # 使用锁确保线程安全
+        with self.alert_lock:
+            # 检查冷却时间和活动警报
+            if (current_time - self.last_alarm_time < self.alarm_cooldown or
+                    alert_type in self.active_alerts):
+                return
+
+            # 标记活动警报
+            self.active_alerts.add(alert_type)
+            self.last_alarm_time = current_time
+
+        # 在后台线程中播放声音
+        def play_sound():
             try:
                 sound_file = "hunchback_alert.wav" if alert_type == "hunchback" else "posture_alert.wav"
                 playsound(sound_file)
-                self.last_alarm_time = current_time
             except Exception as e:
                 print(f"声音报警失败: {e}")
+            finally:
+                # 播放完成后移除活动警报标记
+                with self.alert_lock:
+                    self.active_alerts.discard(alert_type)
+
+        threading.Thread(target=play_sound, daemon=True).start()
+
 
     def analyze(self, frame, src_points=None, dst_points=None, preprocessing=False):
         if preprocessing:
@@ -125,7 +147,7 @@ class Analyzer:
                 upright_angle = find_upright_rotation(frame, self.pose)
                 if upright_angle != 0:
                     frame = rotate_and_scale(frame, -upright_angle, 1.0)
-
+"""
             # 3. 透视校正
             if src_points is not None and dst_points is not None:
                 frame = correct_perspective(frame, src_points, dst_points)
@@ -135,7 +157,6 @@ class Analyzer:
             # 6. 去噪、锐化
             frame = denoise(frame)
             frame = sharpen(frame)
-"""
 
         image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image.flags.writeable = False
@@ -183,7 +204,7 @@ class Analyzer:
             hunchback_status = self.detect_hunchback(spine_angle)
             metrics['spine_angle'] = f"{spine_angle:.1f}°"
 
-            # 只用mediapipe自带的标注
+            # 用mediapipe自带的标注
             mp_drawing.draw_landmarks(
                 image,
                 results.pose_landmarks,
@@ -193,6 +214,10 @@ class Analyzer:
                     thickness=2
                 )
             )
+            if hunchback_status:
+                cv2.putText(image, "HUNCHBACK WARNING!", (50, 100),
+                            cv2.FONT_HERSHEY_SIMPLEX, 1, HUNCHBACK_ALARM_COLOR, 3)
+                self.trigger_alert("hunchback")
 
             if posture_status:
                 cv2.rectangle(image, (0, 0),
@@ -200,9 +225,7 @@ class Analyzer:
                               ALARM_COLOR, 10)
                 cv2.putText(image, "POSTURE WARNING!", (50, 50),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, ALARM_COLOR, 3)
-            if hunchback_status:
-                cv2.putText(image, "HUNCHBACK WARNING!", (50, 100),
-                            cv2.FONT_HERSHEY_SIMPLEX, 1, HUNCHBACK_ALARM_COLOR, 3)
+                self.trigger_alert("posture")
 
         metrics.update({
             'ear_shoulder': f"{ear_shoulder_diff:.4f}",
@@ -260,3 +283,7 @@ class Analyzer:
                 break
         cap.release()
         cv2.destroyAllWindows()
+
+    def detect_hunchback(self, spine_angle):
+        """检测驼背状态"""
+        return spine_angle > HUNCHBACK_ANGLE_THRESHOLD

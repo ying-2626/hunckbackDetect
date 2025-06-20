@@ -11,8 +11,8 @@
         <div class="logo">SittingWatch</div>
         <ul class="nav-links">
             <li><a href="#" class="active">首页</a></li>
+            <li><a href="./daily_report.html">分析报告</a></li>
             <li><a href="https://github.com/ying-2626/hunckbackDetect">使用指南</a></li>
-            <li><a href="#">数据分析</a></li>
             <li><a href="#">个人账号</a></li>
         </ul>
     </nav>
@@ -59,7 +59,7 @@
                             <div class="file-input-container" id="file-drop-area">
                                 <i>📁</i>
                                 <p>拖放图片到此处或点击选择文件</p>
-                                <p class="small">支持 JPG, PNG 格式，最大 5MB</p>
+                                <p class="small">支持 JPG格式，最大 5MB</p>
                                 <input type="file" name="image" id="image-input" accept="image/*" required>
                                 <div id="file-name"></div>
                             </div>
@@ -71,21 +71,21 @@
                     </form>
 
                     <div id="analyze-result">
-
-                        <div class="result-image">
-                            <h3>姿势标记图</h3>
-                            <img src="" alt="姿势分析结果" class="result-img">
-                            <a href="#" download="姿势分析结果.jpg" class="btn btn-outline download-link">
-                                <i>⬇️</i> 下载标记图
-                            </a>
+                        <div class="loading" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>正在分析您的姿势，请稍候...</p>
                         </div>
-
-                        <div class="report-actions">
-                            <button class="btn btn-primary download-report">
-                                <i>📥</i> 下载完整报告
-                            </button>
+                        <div class="result-grid" style="display: none;">
+                            <div class="metric-card">
+                                <h3>驼背姿态检测</h3>
+                                <div class="status-badge" id="posture-status"></div>
+                            </div>
+                            <div class="metric-card">
+                                <h3>置信度</h3>
+                                <div id="confidence-value"></div>
+                                <p class="small">0-1 数值越大，可信度越高</p>
+                            </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -156,158 +156,179 @@
             }
         });
 
-        // 防止重复绑定 submit 事件
-        if (!analyzeForm.dataset.bound) {
-            analyzeForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                console.log("表单提交事件触发"); // 调试日志
 
-                if (!fileInput.files || fileInput.files.length === 0) {
-                    alert('请选择一张图片进行分析');
-                    return;
-                }
+  if (!analyzeForm.dataset.bound) {
+    analyzeForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        console.log("表单提交事件触发"); // 调试日志
 
-                // 显示加载状态
-                    document.querySelector('#analyze-result').style.display = 'block';
-                    document.querySelector('#analyze-result').innerHTML = `
-                        <div class="loading">
-                            <div class="spinner"></div>
-                            <p>正在分析您的姿势，请稍候...</p>
-                        </div>
-                    `;
-
-                try {
-                    const formData = new FormData();
-                    formData.append('image', fileInput.files[0]);
-
-                    const response = await fetch('http://localhost:5000/analyze', {
-                        method: 'POST',
-                        body: formData
-                    });
-
-                    const text = await response.text();
-                    console.log("fetch响应原始文本：", text);
-
-                    const data = JSON.parse(text);
-                    console.log("解析后的JSON：", data);
-
-                    if (!response.ok) {
-                        throw new Error(data.error || `分析失败: ${response.status}`);
-                    }
-
-                    // 生成图片URL - 注意后端返回的字段是filename
-                    const imgUrl = `/static/tmp/${encodeURIComponent(data.filename)}`;
-
-                    // 显示分析结果 - 匹配后端返回的数据结构
-                    analyzeResult.innerHTML = `
-                        <h2>姿势分析结果</h2>
-                        <div class="result-grid">
-                            <div class="metric-card">
-                                <h3>低头检测</h3>
-                                <div class="status-badge ${data.posture_status === '正常' ? 'status-good' : 'status-poor'}">
-                                    ${data.posture_status}
-                                </div>
-                            </div>
-                            <div class="metric-card">
-                                <h3>驼背检测</h3>
-                                <div class="status-badge ${data.hunchback_status === '正常' ? 'status-good' : 'status-poor'}">
-                                    ${data.hunchback_status}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="analysis-summary">
-                            <h3>姿势评估</h3>
-                            <p>${data.posture_status === '正常' ?
-                                '您的坐姿状态良好，请继续保持！' :
-                                '检测到坐姿异常，建议调整姿势'} ${data.hunchback_status === '异常' ? '，存在驼背现象' : ''}</p>
-
-                            <h3>专业建议</h3>
-                            <ul>
-                                <li>调整座椅高度使双脚平放地面</li>
-                                <li>保持背部挺直，避免前倾</li>
-                                <li>调整显示器高度与视线平齐</li>
-                                <li>每30分钟起身活动一次</li>
-                            </ul>
-                        </div>
-
-                        <div class="result-image">
-                            <h3>姿势标记图</h3>
-                            <img src="${imgUrl}" alt="姿势分析结果" onerror="this.src='https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8cG9zdHVyZXx8fHx8fDE2ODc4MzYyODU&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1080'">
-                            <a href="${imgUrl}" download="姿势分析结果.jpg" class="btn btn-outline">
-                                <i>⬇️</i> 下载标记图
-                            </a>
-                        </div>
-
-                        <div class="report-actions">
-                            <button class="btn btn-primary" onclick="downloadAnalysisReport(${JSON.stringify(data).replace(/</g, '\\u003c')})">
-                                <i>📥</i> 下载完整报告
-                            </button>
-                        </div>
-                    `;
-                } catch (error) {
-                    console.error("分析异常：", error);
-                    if (error && error.stack) {
-                        console.error("异常堆栈：", error.stack);
-                    }
-                    analyzeResult.innerHTML = `
-                        <div class="error">
-                            <h3>分析失败</h3>
-                            <p>${error.message}</p>
-                            <button class="btn btn-primary" onclick="location.reload()">重试</button>
-                        </div>
-                    `;
-                }
-            });
-            analyzeForm.dataset.bound = "true";
+        if (!fileInput.files || fileInput.files.length === 0) {
+            alert('请选择一张图片进行分析');
+            return;
         }
 
-        // 修改下载报告函数 - 匹配后端数据结构
-        function downloadAnalysisReport(data) {
-            // 创建报告内容
-            const reportContent = `
-                SittingWatch 姿势分析报告
-                =========================
+        // 显示加载状态
+        showLoadingState();
 
-                分析时间: ${new Date().toLocaleString()}
+        try {
+            const formData = new FormData();
+            formData.append('image', fileInput.files[0]);
 
-                姿势指标:
-                -------------------------
-                耳肩距离: ${data.ear_shoulder} cm (${data.posture_status})
-                肩髋角度: ${data.shoulder_hip}° (${data.posture_status})
-                脊柱弯曲度: ${data.spine_angle}° (${data.hunchback_status})
+            // 调用 /classify 接口
+            let classifyData = null;
+            try {
+                const classifyResponse = await fetch('http://localhost:5000/classify', {
+                    method: 'POST',
+                    body: formData
+                });
 
-                姿势评估:
-                -------------------------
-                ${data.posture_status === '正常' ?
-                    '坐姿状态良好' :
-                    '检测到坐姿异常' + (data.hunchback_status === '异常' ? '和驼背现象' : '')}
+                const classifyText = await classifyResponse.text();
+                classifyData = JSON.parse(classifyText);
+                console.log("分类解析后的JSON：", classifyData);
 
-                建议:
-                -------------------------
-                1. 调整座椅高度使双脚平放地面
-                2. 背部挺直，避免前倾
-                3. 调整显示器高度与视线平齐
-                4. 每30分钟起身活动一次
+                if (!classifyResponse.ok) {
+                    throw new Error(classifyData.error || `分类失败: ${classifyResponse.status}`);
+                }
+
+                // 更新姿态检测结果显示
+                updatePostureResult(classifyData);
+            } catch (classifyError) {
+                console.error("分类异常：", classifyError);
+                if (classifyError && classifyError.stack) {
+                    console.error("分类异常堆栈：", classifyError.stack);
+                }
+                updatePostureResult({ posture: 'unknown', confidence: 0.0 });
+                showError('分类失败', '分类失败，请稍后再试');
+            }
+
+            // 调用 /analyze 接口
+            try {
+                const analyzeResponse = await fetch('http://localhost:5000/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const analyzeText = await analyzeResponse.text();
+                const analyzeData = JSON.parse(analyzeText);
+                console.log("分析解析后的JSON：", analyzeData);
+
+                if (!analyzeResponse.ok) {
+                    throw new Error(analyzeData.error || `分析失败: ${analyzeResponse.status}`);
+                }
+
+                // 生成图片URL - 注意后端返回的字段是filename
+                const imgUrl = `/static/tmp/${encodeURIComponent(analyzeData.filename)}`;
+
+                // 显示分析结果 - 匹配后端返回的数据结构
+                updateAnalyzeResult(analyzeData, imgUrl);
+
+            } catch (analyzeError) {
+                console.error("分析异常：", analyzeError);
+                if (analyzeError && analyzeError.stack) {
+                    console.error("分析异常堆栈：", analyzeError.stack);
+                }
+                showError('分析失败', '分析失败，请稍后再试');
+            }
+
+        } finally {
+            // 隐藏加载状态
+            hideLoadingState();
+        }
+    });
+    analyzeForm.dataset.bound = "true";
+}
+
+        // 辅助函数
+        function showLoadingState() {
+            document.querySelector('#analyze-result .loading').style.display = 'block';
+            document.querySelector('#analyze-result .result-grid').style.display = 'none';
+        }
+
+        function hideLoadingState() {
+            document.querySelector('#analyze-result .loading').style.display = 'none';
+            document.querySelector('#analyze-result .result-grid').style.display = 'flex';
+        }
+
+        let lastClassifyResult = { posture: 'unknown', confidence: 0.0 };
+
+        function updatePostureResult(data) {
+            const postureStatusElement = document.getElementById('posture-status');
+            const confidenceValueElement = document.getElementById('confidence-value');
+
+            // 兼容 sitting_good/sitting_bad
+            let postureType = 'unknown';
+            if (data.posture === 'good' || data.posture === 'sitting_good') {
+                postureType = 'good';
+            } else if (data.posture === 'bad' || data.posture === 'sitting_bad') {
+                postureType = 'bad';
+            }
+
+            // 保存分类结果，供分析结果区域使用
+            lastClassifyResult = { posture: postureType, confidence: data.confidence };
+
+            postureStatusElement.classList.remove('status-good', 'status-poor');
+            if (postureType === 'good') {
+                postureStatusElement.classList.add('status-good');
+                postureStatusElement.textContent = '姿态良好';
+            } else if (postureType === 'bad') {
+                postureStatusElement.classList.add('status-poor');
+                postureStatusElement.textContent = '姿态不良';
+            } else {
+                postureStatusElement.textContent = '未知';
+            }
+
+            confidenceValueElement.textContent = `置信度: ${data.confidence ? data.confidence.toFixed(3) : 'N/A'}`;
+        }
+
+        function updateAnalyzeResult(data, imgUrl) {
+            // 保证结果区域可见
+            document.getElementById('analyze-result').style.display = 'block';
+
+            const analyzeResultDiv = document.querySelector('#analyze-result .analysis-summary');
+            if (analyzeResultDiv) {
+                analyzeResultDiv.remove();
+            }
+
+            // 基于分类结果的姿态文本
+            let postureText = '未知';
+            if (lastClassifyResult.posture === 'good') {
+                postureText = '您的坐姿状态良好，请继续保持！';
+            } else if (lastClassifyResult.posture === 'bad') {
+                postureText = '检测到坐姿异常，建议调整姿势';
+            } else {
+                postureText = '未能识别您的坐姿状态';
+            }
+
+            const newAnalyzeResult = document.createElement('div');
+            newAnalyzeResult.classList.add('analysis-summary');
+            newAnalyzeResult.innerHTML = `
+                <h3>姿势评估</h3>
+                <p>${postureText}${data.hunchback_status === '异常' ? '，存在驼背现象' : ''}</p>
+
+                <div class="result-image">
+                    <h3>姿势标记图</h3>
+                    <img src="${imgUrl}" alt="姿势分析结果" onerror="this.src='https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8cG9zdHVyZXx8fHx8fDE2ODc4MzYyODU&ixlib=rb-4.0.3&q=80&utm_campaign=api-credit&utm_medium=referral&utm_source=unsplash_source&w=1080'">
+                    <a href="${imgUrl}" download="姿势分析结果.jpg" class="btn btn-outline">
+                        <i>⬇️</i> 下载标记图
+                    </a>
+                </div>
+
             `;
-
-            // 创建Blob对象
-            const blob = new Blob([reportContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-
-            // 创建下载链接
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `SittingWatch_Report_${new Date().toISOString().slice(0, 10)}.txt`;
-            document.body.appendChild(a);
-            a.click();
-
-            // 清理
-            setTimeout(() => {
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            }, 100);
+            document.getElementById('analyze-result').appendChild(newAnalyzeResult);
         }
+
+        function showError(title, message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.classList.add('error');
+            errorDiv.innerHTML = `
+                <h3>${title}</h3>
+                <p>${message}</p>
+                <button class="btn btn-primary" onclick="location.reload()">重试</button>
+            `;
+            document.getElementById('analyze-result').appendChild(errorDiv);
+        }
+
+
 
 
         // 实时监控按钮功能

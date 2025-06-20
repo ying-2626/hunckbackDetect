@@ -7,7 +7,7 @@
             --dark: #2C3E50;
             --gray: #7F8C8D;
             --light-gray: #E2E8F0;
-            --border-radius: 12px;
+            --border-radius: 10px;
             --shadow: 0 8px 20px rgba(0,0,0,0.08);
             --transition: all 0.3s ease;
         }
@@ -126,7 +126,7 @@
         .live-feed-container {
             width: 100%;
             max-width: 900px;
-            height: 500px;
+            height: 630px;
             margin: 1.5rem auto;
             border-radius: var(--border-radius);
             overflow: hidden;

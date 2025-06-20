@@ -1,17 +1,22 @@
+import logging
+
+import pandas as pd
 from flask import Flask, jsonify, request, Response, render_template, render_template_string, send_file
 from flask_mail import Mail
+from flask_cors import CORS
 import cv2
 import numpy as np
 import os
 import time
-from flask_cors import CORS
 import json
 import hashlib
 
 from core.analyzer import Analyzer
 from core.capture import CameraCapture
 from core.scheduler import Scheduler
+from models.report_generator import ReportGenerator
 from utils.config import SERVER_CONFIG
+from core.classifier import Classifier
 
 app = Flask(__name__)
 CORS(app)
@@ -19,6 +24,7 @@ mail = Mail(app)
 s = Scheduler(mail, app)  # 传入app实例
 
 analyzer_instance = Analyzer()  # 全局Analyzer实例，避免重复初始化
+classifier_instance = Classifier()  # 全局Classifier实例
 
 USERS_FILE = os.path.join(os.path.dirname(__file__), "users.json")
 
@@ -85,8 +91,6 @@ def video_feed():
             frame = camera.get_frame()
             # 实时分析不做预处理
             image, posture_status, hunchback_status, metrics = analyzer_instance.analyze(frame, preprocessing=False)
-            # image, posture_status, metrics = analyzer_instance.analyze(frame, preprocessing=False)
-
             ret, jpeg = cv2.imencode('.jpg', image)
             if not ret:
                 continue
@@ -137,6 +141,36 @@ def analyze_image():
     })
 
 
+@app.route('/classify', methods=['POST'])
+def classify_image():
+    if 'image' not in request.files:
+        return jsonify({'error': "未上传图片"}), 400
+
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': "未选择图片"}), 400
+    try:
+        # 读取图片为字节流
+        image_bytes = file.read()
+        # 调用分类方法
+        result = classifier_instance.classify_image(image_bytes)
+        # 添加调试输出
+        print(f"分类结果: {result}")
+
+        # 确保返回结果包含姿态和置信度
+        if 'class' in result and 'conf' in result:
+            return jsonify({
+                'posture': result['class'],  # good 或 bad
+                'confidence': float(result['conf'])  # 置信度
+            })
+        else:
+            return jsonify({'error': "无效的分类结果"}), 500
+
+    except Exception as e:
+        print(f"处理分类请求时出错: {str(e)}")
+        return jsonify({'error': f"处理请求时发生错误: {str(e)}"}), 500
+
+
 @app.route('/download_analyzed')
 def download_analyzed():
     filename = request.args.get('filename')
@@ -148,13 +182,31 @@ def download_analyzed():
     return send_file(file_path, mimetype='image/jpeg')
 
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    return jsonify({'status': 'ok'})
+@app.route('/api/daily_report', methods=['GET'])
+def daily_report():
+    date_str = request.args.get('date')
+
+    if not date_str:
+        return jsonify({"error": "缺少日期参数"}), 400
+
+    try:
+        logging.debug(f"Received request for date: {date_str}")
+        report_generator = ReportGenerator()
+        report_data = report_generator.generate_daily_report(date_str)
+        logging.debug(f"Generated report data: {report_data}")
+        return jsonify(report_data)
+
+    except Exception as e:
+        logging.error(f"Error generating report: {str(e)}")
+        return jsonify({
+            "error": str(e),
+            "date": date_str
+        }), 500
 
 
 def start_background_tasks():
     s.start()
+
 
 if __name__ == '__main__':
     start_background_tasks()
