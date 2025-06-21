@@ -132,7 +132,7 @@ hunchback/                    # 项目根目录
 #### 2.3 定时截取视频帧画面，记录日志
 
 - 每3s截取一视频帧画面进行分析，分析并记录日志
-	![日志界面](./static/intro/log.png)
+- ![img.png](./static/intro/img.png)
 - 持续异常计数机制
 - 达到阈值后触发邮件发送
 - 使用Flask-Mail发送HTML格式报告
@@ -187,7 +187,6 @@ curl -X POST -F "image=@path/to/your/test.jpg" http://localhost:6666/detect
 ```json
 {"class":"sitting_bad","conf":"0.7605"}
 ```
-
 ![注册界面](./static/intro/sitting-good.png)
 
 #### 3.3 基于静态图片的人体节点标注图
