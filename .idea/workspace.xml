@@ -5,9 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c4c00416-9f36-432d-ae86-f4a4231c8d7b" name="Changes" comment="解决摄像头线程竞争问题，邮箱上下文获取问题">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/posture_log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/logs/posture_log.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/config.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +115,7 @@
       <workItem from="1749375446759" duration="52964000" />
       <workItem from="1750410123448" duration="11000" />
       <workItem from="1750410435304" duration="38777000" />
-      <workItem from="1750457109850" duration="12870000" />
+      <workItem from="1750457109850" duration="13756000" />
     </task>
     <task id="LOCAL-00001" summary="摄像头持久化capture和邮件发送多线程冲突">
       <option name="closed" value="true" />
@@ -239,7 +237,15 @@
       <option name="project" value="LOCAL" />
       <updated>1750464791385</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="解决摄像头线程竞争问题，邮箱上下文获取问题">
+      <option name="closed" value="true" />
+      <created>1750474512121</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1750474512121</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
