@@ -2,7 +2,7 @@ import cv2, csv, datetime, os, math, time
 import mediapipe as mp
 import threading
 import numpy as np
-from playsound import playsound
+# from playsound import playsound  # 移除声音报警
 from utils.config import POSTURE_THRESHOLD, LOG_FILE
 from core.preprocessing import (
     correct_perspective,
@@ -23,7 +23,7 @@ mp_drawing = mp.solutions.drawing_utils
 
 ALARM_COLOR = (0, 0, 255)
 NORMAL_COLOR = (0, 255, 0)
-HUNCHBACK_ANGLE_THRESHOLD = 30  # 超过这个角度视为驼背
+HUNCHBACK_ANGLE_THRESHOLD = 30
 HUNCHBACK_ALARM_COLOR = (0, 0, 255)  # 红色警报
 
 
@@ -38,10 +38,10 @@ class Analyzer:
         self.ensure_log_header()
         self.enable_preprocessing = False
 
-        self.last_alarm_time = 0
-        self.alarm_cooldown = 3  # 警报冷却时间（秒）
-        self.alert_lock = threading.Lock()  # 新增警报锁
-        self.active_alerts = set()  # 跟踪当前活动的警报类型
+        # self.last_alarm_time = 0
+        # self.alarm_cooldown = 3  # 警报冷却时间（秒）
+        # self.alert_lock = threading.Lock()  # 新增警报锁
+        # self.active_alerts = set()  # 跟踪当前活动的警报类型
 
     def ensure_log_dir(self):
         log_path = './logs'
@@ -84,36 +84,34 @@ class Analyzer:
         except:
             return 0
 
+    # def trigger_alert(self, alert_type="hunchback"):
+    #     """非阻塞方式触发警报"""
+    #     current_time = time.time()
 
-    def trigger_alert(self, alert_type="hunchback"):
-        """非阻塞方式触发警报"""
-        current_time = time.time()
+    #     # 使用锁确保线程安全
+    #     with self.alert_lock:
+    #         # 检查冷却时间和活动警报
+    #         if (current_time - self.last_alarm_time < self.alarm_cooldown or
+    #                 alert_type in self.active_alerts):
+    #             return
 
-        # 使用锁确保线程安全
-        with self.alert_lock:
-            # 检查冷却时间和活动警报
-            if (current_time - self.last_alarm_time < self.alarm_cooldown or
-                    alert_type in self.active_alerts):
-                return
+    #         # 标记活动���报
+    #         self.active_alerts.add(alert_type)
+    #         self.last_alarm_time = current_time
 
-            # 标记活动警报
-            self.active_alerts.add(alert_type)
-            self.last_alarm_time = current_time
+    #     # 在后台线程中播放声音
+    #     def play_sound():
+    #         try:
+    #             sound_file = "hunchback_alert.wav" if alert_type == "hunchback" else "posture_alert.wav"
+    #             playsound(sound_file)
+    #         except Exception as e:
+    #             print(f"声音报警失败: {e}")
+    #         finally:
+    #             # 播放完成后移除活动警报标记
+    #             with self.alert_lock:
+    #                 self.active_alerts.discard(alert_type)
 
-        # 在后台线程中播放声音
-        def play_sound():
-            try:
-                sound_file = "hunchback_alert.wav" if alert_type == "hunchback" else "posture_alert.wav"
-                playsound(sound_file)
-            except Exception as e:
-                print(f"声音报警失败: {e}")
-            finally:
-                # 播放完成后移除活动警报标记
-                with self.alert_lock:
-                    self.active_alerts.discard(alert_type)
-
-        threading.Thread(target=play_sound, daemon=True).start()
-
+    #     threading.Thread(target=play_sound, daemon=True).start()
 
     def analyze(self, frame, src_points=None, dst_points=None, preprocessing=False):
         if preprocessing:
@@ -196,7 +194,7 @@ class Analyzer:
             shoulder_hip_diff = float(shoulder_y - hip_y)
             posture_status = bool(
                 (ear_shoulder_diff > POSTURE_THRESHOLD) and
-                (abs(shoulder_hip_diff) < 0.62)
+                (abs(shoulder_hip_diff) < 0.72)
             )
 
             # 脊柱角度与驼背检测
@@ -217,16 +215,12 @@ class Analyzer:
             if hunchback_status:
                 cv2.putText(image, "HUNCHBACK WARNING!", (50, 100),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, HUNCHBACK_ALARM_COLOR, 3)
-                self.trigger_alert("hunchback")
-
             if posture_status:
                 cv2.rectangle(image, (0, 0),
                               (image.shape[1] - 1, image.shape[0] - 1),
                               ALARM_COLOR, 10)
                 cv2.putText(image, "POSTURE WARNING!", (50, 50),
                             cv2.FONT_HERSHEY_SIMPLEX, 1, ALARM_COLOR, 3)
-                self.trigger_alert("posture")
-
         metrics.update({
             'ear_shoulder': f"{ear_shoulder_diff:.4f}",
             'shoulder_hip': f"{shoulder_hip_diff:.4f}"

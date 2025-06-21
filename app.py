@@ -21,7 +21,8 @@ from core.classifier import Classifier
 app = Flask(__name__)
 CORS(app)
 mail = Mail(app)
-s = Scheduler(mail, app)  # 传入app实例
+camera_instance = CameraCapture()  # 全局唯一摄像头实例
+s = Scheduler(mail, app,camera_instance)  # 传入app实例
 
 analyzer_instance = Analyzer()  # 全局Analyzer实例，避免重复初始化
 classifier_instance = Classifier()  # 全局Classifier实例
@@ -86,9 +87,9 @@ def api_login():
 @app.route('/video_feed')
 def video_feed():
     def generate():
-        camera = CameraCapture()
+        # camera = CameraCapture()  # 不再新建，改为用全局实例
         while True:
-            frame = camera.get_frame()
+            frame = camera_instance.get_frame()
             # 实时分析不做预处理
             image, posture_status, hunchback_status, metrics = analyzer_instance.analyze(frame, preprocessing=False)
             ret, jpeg = cv2.imencode('.jpg', image)
@@ -209,5 +210,8 @@ def start_background_tasks():
 
 
 if __name__ == '__main__':
-    start_background_tasks()
-    app.run(host='0.0.0.0', port=SERVER_CONFIG['PORT'])
+    try:
+        start_background_tasks()
+        app.run(host='0.0.0.0', port=SERVER_CONFIG['PORT'])
+    finally:
+        camera_instance.release()

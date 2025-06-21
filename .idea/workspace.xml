@@ -4,17 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c4c00416-9f36-432d-ae86-f4a4231c8d7b" name="Changes" comment="增加登陆注册，邮箱绑定账号，美化前端">
-      <change afterPath="$PROJECT_DIR$/core/classifier.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/css/daily_report.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/html/daily_report.html" afterDir="false" />
+    <list default="true" id="c4c00416-9f36-432d-ae86-f4a4231c8d7b" name="Changes" comment="接入自训练驼背检测模型，增加报告分析">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/core/analyzer.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/analyzer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/capture.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/capture.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/scheduler.py" beforeDir="false" afterPath="$PROJECT_DIR$/core/scheduler.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/css/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/css/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/html/daily_report.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/html/daily_report.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/html/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/html/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/logs/posture_log.csv" beforeDir="false" afterPath="$PROJECT_DIR$/logs/posture_log.csv" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/models/report_generator.py" beforeDir="false" afterPath="$PROJECT_DIR$/models/report_generator.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/config.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,7 +125,7 @@
       <workItem from="1749375446759" duration="52964000" />
       <workItem from="1750410123448" duration="11000" />
       <workItem from="1750410435304" duration="38777000" />
-      <workItem from="1750457109850" duration="409000" />
+      <workItem from="1750457109850" duration="7122000" />
     </task>
     <task id="LOCAL-00001" summary="摄像头持久化capture和邮件发送多线程冲突">
       <option name="closed" value="true" />
@@ -230,11 +231,30 @@
       <option name="project" value="LOCAL" />
       <updated>1750429450510</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="接入自训练驼背检测模型，增加报告分析">
+      <option name="closed" value="true" />
+      <created>1750457839705</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1750457839705</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="摄像头持久化capture和邮件发送多线程冲突" />
@@ -245,14 +265,15 @@
     <MESSAGE value="删除utils/logs" />
     <MESSAGE value="workspace.xml更新" />
     <MESSAGE value="增加登陆注册，邮箱绑定账号，美化前端" />
-    <option name="LAST_COMMIT_MESSAGE" value="增加登陆注册，邮箱绑定账号，美化前端" />
+    <MESSAGE value="接入自训练驼背检测模型，增加报告分析" />
+    <option name="LAST_COMMIT_MESSAGE" value="接入自训练驼背检测模型，增加报告分析" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/hunchback$emailer.coverage" NAME="emailer Coverage Results" MODIFIED="1749388019635" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
     <SUITE FILE_PATH="coverage/hunchback$report_generator.coverage" NAME="report_generator Coverage Results" MODIFIED="1749391550395" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/models" />
     <SUITE FILE_PATH="coverage/hunchback$config.coverage" NAME="config Coverage Results" MODIFIED="1749387100918" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/utils" />
     <SUITE FILE_PATH="coverage/hunchback$analyzer.coverage" NAME="analyzer Coverage Results" MODIFIED="1749464447955" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/core" />
-    <SUITE FILE_PATH="coverage/hunchback$app.coverage" NAME="app Coverage Results" MODIFIED="1750457200598" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/hunchback$app.coverage" NAME="app Coverage Results" MODIFIED="1750464065065" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/hunchback$scheduler.coverage" NAME="scheduler Coverage Results" MODIFIED="1749386764257" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/core" />
   </component>
 </project>

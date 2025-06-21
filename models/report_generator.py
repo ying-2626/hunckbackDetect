@@ -64,11 +64,10 @@ class ReportGenerator:
                 model="qwen-plus",
                 messages=[
                     {"role": "system", "content": "你是一个坐姿分析医学分析者，\
-                                  擅长分析驼背相关的人体节点角度比如肩-髋垂直差和头-肩垂直差并生成报告，给出改善驼背的意见。"},
-                    {"role": "user", "content": "请根据以下{date_str}的坐姿日志生成一份详细的关于坐姿检测的报告,\
-                                        不要使用markdown语法，但可以‘\n'换行'\
-                                        当天坐姿整体评估（良好/一般/较差）主要基于posture_status而不只是hunchback_status，\
-                                        不要用头-肩垂直差等专业术语，应该用更通俗地表达使用户可以理解" + logs},
+                                              擅长分析驼背相关的人体节点角度比如肩-髋垂直差和头-肩垂直差并生成报告。"},
+                    {"role": "user", "content": "请根据以下日志生成一份关于坐姿异常的报告,\
+                                              不要使用markdown语法，\
+                                              不要用头-肩垂直差等专业术语，应该用更通俗地表达使用户可以理解" + logs},
                 ],
             )
             report = completion.choices[0].message.content

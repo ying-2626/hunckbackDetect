@@ -125,7 +125,7 @@
 
         .live-feed-container {
             width: 100%;
-            max-width: 900px;
+            max-width: 1050px;
             height: 630px;
             margin: 1.5rem auto;
             border-radius: var(--border-radius);
