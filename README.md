@@ -100,12 +100,12 @@ hunchback/                    # 项目根目录
 
 - 用户通过填写注册表单创建账户。
 - 邮箱用于分析报告的发送、持续检测到异常时进行提醒。
-![[Pasted image 20250621074907.png]]
+![注册界面](./static/intro/register.png)
 #### 1.2 登录
 
 - 用户通过邮箱和密码登录系统。
 - 登录成功后，用户可以访问系统的各项功能。
-![[Pasted image 20250621074855.png]]
+![登录界面](./static/intro/login.png)
 
 ### 2 实时姿势监测系统
 
@@ -115,21 +115,21 @@ hunchback/                    # 项目根目录
 - 实时检测人体关键点
 - 在视频流中实时绘制骨骼连接线
 - 计算关键角度（耳-肩角度、肩-髋角度）
-![[Pasted image 20250621075040.png]]
+![标注界面](./static/intro/label.png)
 #### 2.2 不良姿态检测与实时警告
 
 根据关键角度（耳-肩角度、肩-髋角度）进行姿态检测。
 - **检测类型**：
 	1. **驼背检测**
 	2. **低头检测**
-![[Pasted image 20250621085508.png]]
-![[Pasted image 20250621090309.png]]
-- 排除了正常弯腰的干扰
-![[Pasted image 20250621090107.png]]
+![驼背界面](./static/intro/hunchback.png)
+![低头界面](./static/intro/headlow.png)
+  - 排除了正常弯腰的干扰
+  ![弯腰界面](./static/intro/lean.png)
 #### 2.3 定时截取视频帧画面，记录日志
 
 - 每3s截取一视频帧画面进行分析，分析并记录日志
-![[Pasted image 20250621090616.png]]
+	![日志界面](./static/intro/log.png)
 - 持续异常计数机制
 - 达到阈值后触发邮件发送
 - 使用Flask-Mail发送HTML格式报告
@@ -139,15 +139,15 @@ hunchback/                    # 项目根目录
 - 日志中每3s记录一次，如果持续10次触发异常就会触发邮件提醒
 - 邮件内容是调用qwen大模型接口，根据csv日志文件的时间戳，角度计算，姿势检测结果的判断，生成分析报告和改善建议。
 - 使用smtp邮箱代理自动发送
-	![[Pasted image 20250621101419.png]]
+	![配置界面](./static/intro/config.png)
 - 分析报告示例1
-![[Pasted image 20250621095331.png]]
+![repo界面](./static/intro/repo1.png)
 - 示例2
-![[Pasted image 20250621095358.png]]
+![repo界面](./static/intro/repo2.png)
 
 ### 3 基于图片上传的静态精确姿态检测
 
-![[Pasted image 20250621075104.png]]
+![注册界面](./static/intro/empty.png)
 #### 3.1 对上传的图片预处理
 ```python
 def correct_perspective(image, src_points, dst_points):  
@@ -168,7 +168,7 @@ def gaussian_highpass(image, ksize=(0,0), sigma=10):
     # 空域高斯高通滤波
 ```
 - 效果示例图
-![[Pasted image 20250621075847.png]]
+![注册界面](./static/intro/enhance.png)
 
 #### 3.2 调用云端自训练模型进行异常姿态判断
 
@@ -185,17 +185,17 @@ curl -X POST -F "image=@path/to/your/test.jpg" http://localhost:6666/detect
 {"class":"sitting_bad","conf":"0.7605"}
 ```
 
-![[Pasted image 20250621075710.png]]
+![注册界面](./static/intro/sitting-good.png)
 
 #### 3.3 基于静态图片的人体节点标注图
-![[Pasted image 20250621075520.png]]
+![注册界面](./static/intro/siiting-bad.png)
 - 提供预处理增强并标注后的图片下载
-![[Pasted image 20250621075626.png]]
+
 #### 4 用户主动选择生成的分析报告
 
 - 用户可选择日期，通过日期查找日志，生成姿势分析报告，提供姿势分析和建议
-![[Pasted image 20250621080325.png]]
-![[Pasted image 20250621080339.png]]
+![注册界面](./static/intro/daily-repo1.png)
+![注册界面](./static/intro/daily-repo2.png)
 - 当日没有监测数据的情况
-![[Pasted image 20250621080425.png]]
+![注册界面](./static/intro/non-repo.png)
 
