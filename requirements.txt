@@ -1,0 +1,9 @@
+Flask==3.1.1
+Flask_Cors==4.0.0
+flask_mail==0.10.0
+mediapipe==0.10.21
+numpy==1.24.2
+openai==1.90.0
+opencv_python==4.9.0.80
+pandas==1.5.3
+Requests==2.32.4
