@@ -20,8 +20,13 @@ https://github.com/Hanson-Wang-chn/SittingWatch
 	- 康复训练的姿势监测设备
 ---
 ## 二、环境依赖安装与运行
-
-- `requirements.txt`
+1. 创建并激活一个Conda环境
+```python
+conda create -n hunchback python=3.12.3
+conda activate hunchback
+```
+2. 安装项目依赖
+- `requirements.txt`如下
 ```txt
 Flask==3.1.1  
 Flask_Cors==4.0.0  
@@ -37,8 +42,8 @@ Requests==2.32.4
 ```bash
 pip install -r requirements.txt
 ```
-- 运行app.py文件
-- 打开前端页面/本地ip地址（目前未部署上云）
+3. 运行app.py文件 
+4. 打开前端页面(本地ip地址)`http://localhost:63342/hunchback/frontend/html/login.html `（目前未部署上云）
 
 ---
 ## 三、文件组织结构
