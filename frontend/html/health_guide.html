@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SittingWatch - 健康指南</title>
+    <link rel="stylesheet" href="../css/index.css">
+    <style>
+        .guide-container {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            padding: 20px 0;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .guide-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: row;
+            border: 1px solid #eee;
+        }
+
+        .guide-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-image-container {
+            width: 35%;
+            min-width: 300px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .guide-card:hover .card-image {
+            transform: scale(1.05);
+        }
+
+        .card-content {
+            width: 65%;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .posture-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #2c3e50;
+            position: relative;
+            padding-left: 15px;
+        }
+
+        .posture-name::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 24px;
+            background: #3498db;
+            border-radius: 3px;
+        }
+
+        .posture-en {
+            color: #95a5a6;
+            font-size: 1rem;
+            font-weight: normal;
+            margin-left: 10px;
+        }
+
+        .tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .tag-high-risk {
+            background: #ffeaa7;
+            color: #d35400;
+        }
+
+        .section-block {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #34495e;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title i {
+            margin-right: 8px;
+            color: #3498db;
+        }
+
+        .guide-text {
+            color: #555;
+            line-height: 1.7;
+            font-size: 0.95rem;
+            text-align: justify;
+        }
+
+        .disease-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .disease-item {
+            background: #ffebee;
+            color: #c0392b;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            border: 1px solid #ffcdd2;
+        }
+
+        .tip-box {
+            background: #f0f9eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: auto;
+            border-left: 4px solid #67c23a;
+        }
+
+        .tip-title {
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .guide-card {
+                flex-direction: column;
+            }
+
+            .card-image-container {
+                width: 100%;
+                height: 250px;
+            }
+
+            .card-content {
+                width: 100%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="logo">SittingWatch</div>
+        <ul class="nav-links">
+            <li><a href="/">姿态分析</a></li>
+            <li><a href="/daily_report.html">分析报告</a></li>
+            <li><a href="/health_guide.html" class="active">健康指南</a></li>
+            <li><a href="/login.html">退出登录</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h1>不良姿态健康百科</h1>
+            <p>深入了解常见不良坐姿的病理机制与潜在危害，科学预防职业病</p>
+        </div>
+
+        <div class="guide-container">
+            <!-- 1. 驼背 -->
+            <div class="guide-card">
+                <div class="card-image-container">
+                    <img src="../img/hunchback.png" class="card-image" alt="驼背示意图">
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <div class="posture-name">驼背 <span class="posture-en">Kyphosis</span></div>
+                        <span class="tag tag-high-risk">高发人群：办公族/学生</span>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">🧬 科学解析</div>
+                        <p class="guide-text">
+                            医学上称为"脊柱后凸"，表现为胸椎生理曲度向后过度增加。正常人的胸椎后凸角应在20°-45°之间，超过此范围即为病理性驼背。这种姿态通常伴随着肩胛骨前引（圆肩）和头部前引，形成典型的"上交叉综合征"。
+                        </p>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">⚠️ 疾病隐患</div>
+                        <div class="disease-list">
+                            <span class="disease-item">胸廓出口综合征</span>
+                            <span class="disease-item">呼吸功能减弱</span>
+                            <span class="disease-item">慢性背痛</span>
+                            <span class="disease-item">脊柱骨质增生</span>
+                        </div>
+                        <p class="guide-text" style="margin-top: 8px; font-size: 0.9rem; color: #7f8c8d;">
+                            长期驼背会压缩胸腔容积，导致肺活量下降，易引发心悸、胸闷。同时，背部肌肉被动拉长，极易形成慢性劳损和激痛点。
+                        </p>
+                    </div>
+
+                    <div class="tip-box">
+                        <div class="tip-title">🩺 矫正处方</div>
+                        <p class="guide-text" style="margin-bottom:0">
+                            1. 强化背部菱形肌（如弹力带划船）；<br>
+                            2. 拉伸紧张的胸大肌（门口拉伸法）；<br>
+                            3. 保持"收下巴、挺胸、沉肩"的坐姿意识。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. 头前伸 -->
+            <div class="guide-card">
+                <div class="card-image-container">
+                    <img src="../img/head_ahead.png" class="card-image" alt="头前伸示意图">
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <div class="posture-name">头前伸/手机颈 <span class="posture-en">Forward Head Posture</span></div>
+                        <span class="tag tag-high-risk">高危：低头族</span>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">🧬 科学解析</div>
+                        <p class="guide-text">
+                            当耳垂位置超过肩峰垂直线前侧时，即为头前伸。研究显示，头部每向前伸1英寸（约2.5厘米），颈椎受到的压力就会增加约4.5公斤。长期低头看手机（60度角）时，颈椎承受的压力可达27公斤，相当于一个8岁儿童的体重挂在脖子上。
+                        </p>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">⚠️ 疾病隐患</div>
+                        <div class="disease-list">
+                            <span class="disease-item">颈椎病</span>
+                            <span class="disease-item">富贵包</span>
+                            <span class="disease-item">颈源性头痛</span>
+                            <span class="disease-item">枕神经痛</span>
+                        </div>
+                    </div>
+
+                    <div class="tip-box">
+                        <div class="tip-title">🩺 矫正处方</div>
+                        <p class="guide-text" style="margin-bottom:0">
+                            1. 调整显示器高度，保持视线平视；<br>
+                            2. 每天进行"收下巴"（Chin Tucks）练习，激活深层颈屈肌；<br>
+                            3. 避免长时间低头刷手机，尽量举高手机观看。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. 二郎腿 -->
+            <div class="guide-card">
+                <div class="card-image-container">
+                    <img src="../img/qiaoerlangtui.png" class="card-image" alt="二郎腿示意图">
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <div class="posture-name">跷二郎腿 <span class="posture-en">Crossed Legs</span></div>
+                        <span class="tag tag-high-risk">隐形杀手</span>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">🧬 科学解析</div>
+                        <p class="guide-text">
+                            虽然翘腿能暂时放松下肢肌肉，但会破坏骨盆平衡。当一条腿压在另一条腿上时，骨盆会发生旋转和倾斜，带动腰椎出现代偿性侧弯。长期如此，会导致两侧腰部肌肉力量不平衡，甚至引发结构性改变。
+                        </p>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">⚠️ 疾病隐患</div>
+                        <div class="disease-list">
+                            <span class="disease-item">骨盆旋移</span>
+                            <span class="disease-item">假性长短腿</span>
+                            <span class="disease-item">坐骨神经痛</span>
+                            <span class="disease-item">下肢静脉曲张</span>
+                        </div>
+                        <p class="guide-text" style="margin-top: 8px; font-size: 0.9rem; color: #7f8c8d;">
+                            压迫腘窝处的静脉和神经，阻碍血液回流，增加血栓风险。
+                        </p>
+                    </div>
+
+                    <div class="tip-box">
+                        <div class="tip-title">🩺 矫正处方</div>
+                        <p class="guide-text" style="margin-bottom:0">
+                            1. 双脚平放在地面，大腿与地面平行；<br>
+                            2. 如果忍不住想翘腿，可以尝试脚踝交叉代替膝盖交叉；<br>
+                            3. 定时起身走动，缓解下肢血液淤积。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. 半躺/葛优躺 -->
+            <div class="guide-card">
+                <div class="card-image-container">
+                    <img src="../img/tang_zuo.png" class="card-image" alt="葛优躺示意图">
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <div class="posture-name">半躺/瘫坐 <span class="posture-en">Slouching / Sacral Sitting</span></div>
+                        <span class="tag tag-high-risk">腰椎杀手</span>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">🧬 科学解析</div>
+                        <p class="guide-text">
+                            俗称"葛优躺"，特点是臀部前移，腰部悬空，背部靠在椅背上。此时腰椎原本向前的生理曲度被强行变直甚至反向弯曲。这种姿势下，腰椎间盘承受的剪切力极大，且由于缺乏肌肉支撑，压力全部集中在韧带和椎间盘上。
+                        </p>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">⚠️ 疾病隐患</div>
+                        <div class="disease-list">
+                            <span class="disease-item">腰椎间盘突出</span>
+                            <span class="disease-item">腰肌劳损</span>
+                            <span class="disease-item">骶髂关节炎</span>
+                            <span class="disease-item">脊柱退行性变</span>
+                        </div>
+                    </div>
+
+                    <div class="tip-box">
+                        <div class="tip-title">🩺 矫正处方</div>
+                        <p class="guide-text" style="margin-bottom:0">
+                            1. 坐到底：臀部紧贴椅背，使用腰靠支撑腰椎；<br>
+                            2. 避免坐过于松软的沙发；<br>
+                            3. 核心收紧，保持上半身直立。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. 骨盆前倾 -->
+            <div class="guide-card">
+                <div class="card-image-container">
+                    <img src="../img/gupenqianqing.png" class="card-image" alt="骨盆前倾示意图">
+                </div>
+                <div class="card-content">
+                    <div class="card-header">
+                        <div class="posture-name">骨盆前倾 <span class="posture-en">Anterior Pelvic Tilt</span></div>
+                        <span class="tag tag-high-risk">伪翘臀</span>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">🧬 科学解析</div>
+                        <p class="guide-text">
+                            常被误认为是"翘臀"，实际上是骨盆向前旋转，导致腰椎过度前凸，小腹突出。久坐会导致髋屈肌（髂腰肌）缩短紧张，同时臀肌和腹肌无力，从而将骨盆向下拉扯，形成"下交叉综合征"。
+                        </p>
+                    </div>
+
+                    <div class="section-block">
+                        <div class="section-title">⚠️ 疾病隐患</div>
+                        <div class="disease-list">
+                            <span class="disease-item">L4-L5腰椎间盘突出</span>
+                            <span class="disease-item">腰椎滑脱</span>
+                            <span class="disease-item">腰椎管狭窄</span>
+                            <span class="disease-item">长期腰痛</span>
+                        </div>
+                    </div>
+
+                    <div class="tip-box">
+                        <div class="tip-title">🩺 矫正处方</div>
+                        <p class="guide-text" style="margin-bottom:0">
+                            1. 拉伸紧张的髂腰肌（弓步拉伸）；<br>
+                            2. 强化臀大肌（臀桥）和腹直肌（卷腹）；<br>
+                            3. 避免长期穿高跟鞋。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>SittingWatch 智能坐姿监测系统 | 让健康姿势成为习惯</p>
+    </div>
+</body>
+
+</html>

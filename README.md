@@ -1,7 +1,4 @@
-# SittingWatch——基于监控摄像头的智能坐姿分析系统(端侧实现)
-
-云端部分由王海生同学完成，仓库如下：
-https://github.com/Hanson-Wang-chn/SittingWatch
+# SittingWatch——基于监控摄像头的智能坐姿分析系统
 
 ## 一、项目简介
 

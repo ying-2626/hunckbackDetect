@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <title>SittingWatch - 坐姿监测日报</title>
@@ -7,14 +8,15 @@
     <link rel="stylesheet" href="../css/index.css">
     <link rel="stylesheet" href="../css/daily_report.css">
 </head>
+
 <body>
     <nav class="navbar">
         <div class="logo">SittingWatch</div>
         <ul class="nav-links">
-            <li><a href="index.html">首页</a></li>
-            <li><a href="daily_report.html" class="active">分析报告</a></li>
-            <li><a href="https://github.com/ying-2626/hunckbackDetect">使用指南</a></li>
-            <li><a href="./login.html">个人账号</a></li>
+            <li><a href="/">姿态分析</a></li>
+            <li><a href="/daily_report.html" class="active">分析报告</a></li>
+            <li><a href="/health_guide.html">健康指南</a></li>
+            <li><a href="/login.html">退出登录</a></li>
         </ul>
     </nav>
 
@@ -24,7 +26,12 @@
             <p>选择日期，获取当天的坐姿分析日报</p>
         </div>
 
-        <div class="card">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="daily-report">日报查询</button>
+            <button class="tab-btn" data-tab="alert-history">实时异常记录</button>
+        </div>
+
+        <div id="daily-report-section" class="card tab-content active">
             <div class="report-controls">
                 <input type="date" id="date-picker" required>
                 <button id="generate-btn" class="btn btn-primary">
@@ -41,6 +48,32 @@
                 <!-- 日报内容将在这里动态加载 -->
             </div>
         </div>
+
+        <div id="alert-history-section" class="card tab-content" style="display: none;">
+            <div class="header-small">
+                <h2>实时异常提醒记录</h2>
+                <p>系统检测到连续异常并发送邮件的历史记录</p>
+            </div>
+
+            <div class="controls-bar">
+                <button id="refresh-alerts-btn" class="btn btn-secondary">
+                    <i class="fas fa-sync-alt"></i> 刷新列表
+                </button>
+            </div>
+
+            <div id="alert-loading" class="loading-state">
+                <div class="spinner"></div>
+                <p>正在加载记录...</p>
+            </div>
+
+            <div id="alert-list" class="alert-list">
+                <!-- 异常记录列表 -->
+            </div>
+
+            <div id="no-alerts" class="no-data" style="display: none;">
+                <p>暂无异常提醒记录</p>
+            </div>
+        </div>
     </div>
 
     <div class="footer">
@@ -48,7 +81,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // 设置默认日期为今天
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('date-picker').value = today;
@@ -58,8 +91,42 @@
             const loading = document.getElementById('loading');
             const reportContainer = document.getElementById('report-container');
 
+            // Tab 切换逻辑
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 移除所有 active 类
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabContents.forEach(c => {
+                        c.style.display = 'none';
+                        c.classList.remove('active');
+                    });
+
+                    // 添加 active 类到当前按钮和对应内容
+                    btn.classList.add('active');
+                    const tabId = btn.getAttribute('data-tab');
+                    const contentId = tabId === 'daily-report' ? 'daily-report-section' : 'alert-history-section';
+                    const content = document.getElementById(contentId);
+                    content.style.display = 'block';
+                    content.classList.add('active');
+
+                    // 如果切换到异常记录 Tab，自动加载数据
+                    if (tabId === 'alert-history') {
+                        loadAlertHistory();
+                    }
+                });
+            });
+
+            // 刷新异常记录
+            const refreshAlertsBtn = document.getElementById('refresh-alerts-btn');
+            if (refreshAlertsBtn) {
+                refreshAlertsBtn.addEventListener('click', loadAlertHistory);
+            }
+
             // 生成日报事件
-            generateBtn.addEventListener('click', async function() {
+            generateBtn.addEventListener('click', async function () {
                 const selectedDate = document.getElementById('date-picker').value;
                 if (!selectedDate) {
                     alert('请选择日期');
@@ -92,19 +159,75 @@
             async function fetchDailyReport(date) {
                 console.log('正在获取日期:', date);
                 try {
-                    const response = await fetch(`http://localhost:5000/api/daily_report?date=${encodeURIComponent(date)}`);
+                    const response = await fetch(`/api/daily_report?date=${encodeURIComponent(date)}`);
                     if (!response.ok) {
                         const errorText = await response.text();
                         console.error('API请求失败:', errorText);
-                        throw new Error(errorText || '获取数据失败');
+                        throw new Error(`请求失败 (${response.status})`);
                     }
-                    const data = await response.json();
-                    console.log("日报API响应JSON:", data); // 新增调试输出
-                    return data;
+                    return await response.json();
                 } catch (error) {
-                    console.error('生成报告出错:', error);
+                    console.error('Fetch error:', error);
                     throw error;
                 }
+            }
+
+            // 加载异常历史记录
+            async function loadAlertHistory() {
+                const alertList = document.getElementById('alert-list');
+                const loading = document.getElementById('alert-loading');
+                const noData = document.getElementById('no-alerts');
+
+                loading.style.display = 'block';
+                alertList.innerHTML = '';
+                noData.style.display = 'none';
+
+                try {
+                    const response = await fetch('/api/alert_history');
+                    if (!response.ok) throw new Error('Failed to fetch history');
+
+                    const data = await response.json();
+
+                    loading.style.display = 'none';
+
+                    if (!data || data.length === 0) {
+                        noData.style.display = 'block';
+                        return;
+                    }
+
+                    renderAlertList(data);
+
+                } catch (error) {
+                    console.error('加载历史记录失败:', error);
+                    loading.style.display = 'none';
+                    alertList.innerHTML = `<div class="error-msg">加载失败: ${error.message}</div>`;
+                }
+            }
+
+            function renderAlertList(alerts) {
+                const alertList = document.getElementById('alert-list');
+
+                alerts.forEach(alert => {
+                    const item = document.createElement('div');
+                    item.className = 'alert-item';
+
+                    // 格式化内容，处理换行
+                    const contentHtml = alert.content.replace(/\n/g, '<br>');
+
+                    item.innerHTML = `
+                        <div class="alert-header">
+                            <span class="alert-time">
+                                <i class="far fa-clock"></i> ${alert.timestamp}
+                            </span>
+                            <span class="alert-badge">异常提醒</span>
+                        </div>
+                        <div class="alert-content">
+                            ${contentHtml}
+                        </div>
+                    `;
+
+                    alertList.appendChild(item);
+                });
             }
 
             // 渲染日报
@@ -164,4 +287,5 @@
         });
     </script>
 </body>
+
 </html>

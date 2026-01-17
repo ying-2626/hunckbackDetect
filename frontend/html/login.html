@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SittingWatch - 智能坐姿监测系统</title>
-     <link rel="stylesheet" href="../css/login.css">
+    <link rel="stylesheet" href="../css/login.css">
 </head>
+
 <body>
     <div class="background-shapes">
         <div class="shape shape-1"></div>
@@ -79,7 +81,8 @@
                         <label for="login-password">密码</label>
                         <div class="input-with-icon">
                             <i class="fas fa-lock"></i>
-                            <input type="password" class="form-control" id="login-password" placeholder="请输入密码" required>
+                            <input type="password" class="form-control" id="login-password" placeholder="请输入密码"
+                                required>
                             <i class="fas fa-eye password-toggle"></i>
                         </div>
                     </div>
@@ -120,7 +123,8 @@
                         <label for="register-password">密码</label>
                         <div class="input-with-icon">
                             <i class="fas fa-lock"></i>
-                            <input type="password" class="form-control" id="register-password" placeholder="设置密码 (至少8位)" required>
+                            <input type="password" class="form-control" id="register-password" placeholder="设置密码 (至少8位)"
+                                required>
                             <i class="fas fa-eye password-toggle"></i>
                         </div>
                     </div>
@@ -129,7 +133,8 @@
                         <label for="register-confirm">确认密码</label>
                         <div class="input-with-icon">
                             <i class="fas fa-lock"></i>
-                            <input type="password" class="form-control" id="register-confirm" placeholder="确认您的密码" required>
+                            <input type="password" class="form-control" id="register-confirm" placeholder="确认您的密码"
+                                required>
                             <i class="fas fa-eye password-toggle"></i>
                         </div>
                     </div>
@@ -225,8 +230,8 @@
             msg.id = 'login-msg';
 
             try {
-                // 使用绝对路径并指定端口，确保请求发往 Flask 后端
-                const resp = await fetch('http://localhost:5000/api/login', {
+                // 使用相对路径，适配 Vercel 部署
+                const resp = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -270,8 +275,8 @@
             }
 
             try {
-                // 使用绝对路径并指定端口，确保请求发往 Flask 后端
-                const resp = await fetch('http://localhost:5000/api/register', {
+                // 使用相对路径，适配 Vercel 部署
+                const resp = await fetch('/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name, email, password })
@@ -291,4 +296,5 @@
         });
     </script>
 </body>
+
 </html>

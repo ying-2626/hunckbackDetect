@@ -1,19 +1,74 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SittingWatch - 实时姿势监测系统</title>
     <link rel="stylesheet" href="../css/index.css">
+    <style>
+        .report-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .report-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .report-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .report-card h4 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+            margin-bottom: 10px;
+        }
+
+        .report-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #555;
+            white-space: pre-wrap;
+        }
+
+        .report-card.danger {
+            border-left-color: #e74c3c;
+        }
+
+        .report-card.warning {
+            border-left-color: #f39c12;
+        }
+
+        .report-card.success {
+            border-left-color: #2ecc71;
+        }
+
+        .report-card.info {
+            border-left-color: #3498db;
+        }
+    </style>
 </head>
+
 <body>
     <nav class="navbar">
         <div class="logo">SittingWatch</div>
         <ul class="nav-links">
-            <li><a href="#" class="active">首页</a></li>
+            <li><a href="#" class="active">姿态分析</a></li>
             <li><a href="./daily_report.html">分析报告</a></li>
-            <li><a href="https://github.com/ying-2626/hunckbackDetect">使用指南</a></li>
-            <li><a href="./login.html">个人账号</a></li>
+            <li><a href="./health_guide.html">健康指南</a></li>
+            <li><a href="./login.html">退出登录</a></li>
         </ul>
     </nav>
 
@@ -34,7 +89,7 @@
                 <p>系统正在通过摄像头实时监测您的坐姿，当检测到不良姿势时会立即提醒您。</p>
 
                 <div class="live-feed-container">
-                    <img src="http://localhost:5000/video_feed" id="live-feed" alt="实时检测画面">
+                    <img src="/video_feed" id="live-feed" alt="实时检测画面">
                 </div>
 
                 <div class="camera-controls">
@@ -65,7 +120,8 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary" style="width:auto;display:block;margin:0 auto;text-align:center;">
+                        <button type="submit" class="btn btn-primary"
+                            style="width:auto;display:block;margin:0 auto;text-align:center;">
                             <span style="display:inline-block;width:100%;text-align:center;">分析姿势</span>
                         </button>
                     </form>
@@ -75,17 +131,47 @@
                             <div class="spinner"></div>
                             <p>正在分析您的姿势，请稍候...</p>
                         </div>
-                        <div class="result-grid" style="display: none;">
-                            <div class="metric-card">
-                                <h3>驼背姿态检测</h3>
-                                <div class="status-badge" id="posture-status"></div>
-                            </div>
-                            <div class="metric-card">
-                                <h3>置信度</h3>
-                                <div id="confidence-value"></div>
-                                <p class="small">0-1 数值越大，可信度越高</p>
+
+                        <!-- AI 分析报告展示区 -->
+                        <div id="ai-report-container" style="display: none; margin-top: 20px;">
+                            <div class="card" style="background: #f8f9fa; box-shadow: none; border: 1px solid #e9ecef;">
+                                <h3
+                                    style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; margin-bottom: 15px;">
+                                    🤖 AI 智能分析报告
+                                </h3>
+
+                                <div class="report-grid">
+                                    <div class="report-card info">
+                                        <h4>🧘 姿态分析</h4>
+                                        <div id="report-posture" class="report-content">暂无数据</div>
+                                    </div>
+                                    <div class="report-card warning">
+                                        <h4>🔍 成因分析</h4>
+                                        <div id="report-causes" class="report-content">暂无数据</div>
+                                    </div>
+                                    <div class="report-card danger">
+                                        <h4>⚠️ 健康危害</h4>
+                                        <div id="report-risks" class="report-content">暂无数据</div>
+                                    </div>
+                                    <div class="report-card success">
+                                        <h4>💡 矫正建议</h4>
+                                        <div id="report-suggestions" class="report-content">暂无数据</div>
+                                    </div>
+                                </div>
+
+                                <!-- 兼容旧的显示区域，如果解析JSON失败 -->
+                                <div id="ai-analysis-content"
+                                    style="white-space: pre-wrap; line-height: 1.8; color: #444; font-size: 15px; display: none; margin-top: 15px;">
+                                </div>
                             </div>
                         </div>
+
+                        <!-- 保留原有的 result-grid 结构但隐藏，或者直接替换。为了兼容性，我这里替换它，
+                             因为原来的 metric-card 是专门为 good/bad 设计的。
+                             如果还需要显示 MediaPipe 的几何分析结果，那个是在 updateAnalyzeResult 里处理的。
+                             注意：updateAnalyzeResult 可能会操作其他 DOM 元素，我需要检查一下。
+                             刚才的代码 Read 没显示 updateAnalyzeResult 的实现，我最好再读一下后面。
+                        -->
                     </div>
                 </div>
             </div>
@@ -98,14 +184,14 @@
 
     <script>
         // 切换标签页功能
-        document.getElementById('live-tab').addEventListener('click', function() {
+        document.getElementById('live-tab').addEventListener('click', function () {
             document.getElementById('live-content').style.display = 'block';
             document.getElementById('upload-content').style.display = 'none';
             document.getElementById('live-tab').classList.add('active');
             document.getElementById('upload-tab').classList.remove('active');
         });
 
-        document.getElementById('upload-tab').addEventListener('click', function() {
+        document.getElementById('upload-tab').addEventListener('click', function () {
             document.getElementById('upload-content').style.display = 'block';
             document.getElementById('live-content').style.display = 'none';
             document.getElementById('upload-tab').classList.add('active');
@@ -119,7 +205,7 @@
         const analyzeForm = document.getElementById('analyze-form');
         const analyzeResult = document.getElementById('analyze-result');
 
-        fileInput.addEventListener('change', function(e) {
+        fileInput.addEventListener('change', function (e) {
             if (e.target.files.length) {
                 fileName.textContent = '已选择: ' + e.target.files[0].name;
             }
@@ -157,127 +243,160 @@
         });
 
 
-  if (!analyzeForm.dataset.bound) {
-    analyzeForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        console.log("表单提交事件触发"); // 调试日志
+        if (!analyzeForm.dataset.bound) {
+            analyzeForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                console.log("表单提交事件触发"); // 调试日志
 
-        if (!fileInput.files || fileInput.files.length === 0) {
-            alert('请选择一张图片进行分析');
-            return;
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('请选择一张图片进行分析');
+                    return;
+                }
+
+                // 显示加载状态
+                showLoadingState();
+
+                try {
+                    const formData = new FormData();
+                    formData.append('image', fileInput.files[0]);
+
+                    // 调用 /classify 接口
+                    let classifyData = null;
+                    try {
+                        const classifyResponse = await fetch('/classify', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const classifyText = await classifyResponse.text();
+                        classifyData = JSON.parse(classifyText);
+                        console.log("分类解析后的JSON：", classifyData);
+
+                        if (!classifyResponse.ok) {
+                            throw new Error(classifyData.error || `分类失败: ${classifyResponse.status}`);
+                        }
+
+                        // 更新姿态检测结果显示
+                        updatePostureResult(classifyData);
+                    } catch (classifyError) {
+                        console.error("分类异常：", classifyError);
+                        if (classifyError && classifyError.stack) {
+                            console.error("分类异常堆栈：", classifyError.stack);
+                        }
+                        updatePostureResult({ posture: 'unknown', confidence: 0.0 });
+                        showError('分类失败', '分类失败，请稍后再试');
+                    }
+
+                    // 调用 /analyze 接口
+                    try {
+                        const analyzeResponse = await fetch('/analyze', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const analyzeText = await analyzeResponse.text();
+                        const analyzeData = JSON.parse(analyzeText);
+                        console.log("分析解析后的JSON：", analyzeData);
+
+                        if (!analyzeResponse.ok) {
+                            throw new Error(analyzeData.error || `分析失败: ${analyzeResponse.status}`);
+                        }
+
+                        // 生成图片URL
+                        let imgUrl;
+                        if (analyzeData.image_base64) {
+                            imgUrl = `data:image/jpeg;base64,${analyzeData.image_base64}`;
+                        } else {
+                            // 兼容旧模式
+                            imgUrl = `/static/tmp/${encodeURIComponent(analyzeData.filename)}`;
+                        }
+
+                        // 显示分析结果 - 匹配后端返回的数据结构
+                        updateAnalyzeResult(analyzeData, imgUrl);
+
+                    } catch (analyzeError) {
+                        console.error("分析异常：", analyzeError);
+                        if (analyzeError && analyzeError.stack) {
+                            console.error("分析异常堆栈：", analyzeError.stack);
+                        }
+                        showError('分析失败', '分析失败，请稍后再试');
+                    }
+
+                } finally {
+                    // 隐藏加载状态
+                    hideLoadingState();
+                }
+            });
+            analyzeForm.dataset.bound = "true";
         }
-
-        // 显示加载状态
-        showLoadingState();
-
-        try {
-            const formData = new FormData();
-            formData.append('image', fileInput.files[0]);
-
-            // 调用 /classify 接口
-            let classifyData = null;
-            try {
-                const classifyResponse = await fetch('http://localhost:5000/classify', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const classifyText = await classifyResponse.text();
-                classifyData = JSON.parse(classifyText);
-                console.log("分类解析后的JSON：", classifyData);
-
-                if (!classifyResponse.ok) {
-                    throw new Error(classifyData.error || `分类失败: ${classifyResponse.status}`);
-                }
-
-                // 更新姿态检测结果显示
-                updatePostureResult(classifyData);
-            } catch (classifyError) {
-                console.error("分类异常：", classifyError);
-                if (classifyError && classifyError.stack) {
-                    console.error("分类异常堆栈：", classifyError.stack);
-                }
-                updatePostureResult({ posture: 'unknown', confidence: 0.0 });
-                showError('分类失败', '分类失败，请稍后再试');
-            }
-
-            // 调用 /analyze 接口
-            try {
-                const analyzeResponse = await fetch('http://localhost:5000/analyze', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const analyzeText = await analyzeResponse.text();
-                const analyzeData = JSON.parse(analyzeText);
-                console.log("分析解析后的JSON：", analyzeData);
-
-                if (!analyzeResponse.ok) {
-                    throw new Error(analyzeData.error || `分析失败: ${analyzeResponse.status}`);
-                }
-
-                // 生成图片URL - 注意后端返回的字段是filename
-                const imgUrl = `/static/tmp/${encodeURIComponent(analyzeData.filename)}`;
-
-                // 显示分析结果 - 匹配后端返回的数据结构
-                updateAnalyzeResult(analyzeData, imgUrl);
-
-            } catch (analyzeError) {
-                console.error("分析异常：", analyzeError);
-                if (analyzeError && analyzeError.stack) {
-                    console.error("分析异常堆栈：", analyzeError.stack);
-                }
-                showError('分析失败', '分析失败，请稍后再试');
-            }
-
-        } finally {
-            // 隐藏加载状态
-            hideLoadingState();
-        }
-    });
-    analyzeForm.dataset.bound = "true";
-}
 
         // 辅助函数
         function showLoadingState() {
             document.querySelector('#analyze-result .loading').style.display = 'block';
-            document.querySelector('#analyze-result .result-grid').style.display = 'none';
+            const reportContainer = document.getElementById('ai-report-container');
+            if (reportContainer) reportContainer.style.display = 'none';
+
+            // 隐藏可能存在的上一次分析结果
+            const summary = document.querySelector('.analysis-summary');
+            if (summary) summary.style.display = 'none';
         }
 
         function hideLoadingState() {
             document.querySelector('#analyze-result .loading').style.display = 'none';
-            document.querySelector('#analyze-result .result-grid').style.display = 'flex';
         }
 
         let lastClassifyResult = { posture: 'unknown', confidence: 0.0 };
 
         function updatePostureResult(data) {
-            const postureStatusElement = document.getElementById('posture-status');
-            const confidenceValueElement = document.getElementById('confidence-value');
+            const reportContainer = document.getElementById('ai-report-container');
+            const analysisContent = document.getElementById('ai-analysis-content');
+            const gridContainer = document.querySelector('.report-grid');
 
-            // 兼容 sitting_good/sitting_bad
+            if (data.analysis) {
+                if (typeof data.analysis === 'object') {
+                    // 如果是 JSON 对象，显示分栏
+                    if (gridContainer) gridContainer.style.display = 'grid';
+                    if (analysisContent) analysisContent.style.display = 'none';
+
+                    document.getElementById('report-posture').textContent = data.analysis.posture_analysis || '无数据';
+                    document.getElementById('report-causes').textContent = data.analysis.causes_analysis || '无数据';
+                    document.getElementById('report-risks').textContent = data.analysis.harm_analysis || '无数据';
+                    document.getElementById('report-suggestions').textContent = data.analysis.correction_suggestions || '无数据';
+                } else {
+                    // 如果是纯文本（兼容旧逻辑），显示单一文本框
+                    if (gridContainer) gridContainer.style.display = 'none';
+                    if (analysisContent) {
+                        analysisContent.style.display = 'block';
+                        analysisContent.textContent = data.analysis;
+                    }
+                }
+
+                if (reportContainer) reportContainer.style.display = 'block';
+            }
+
+            // 兼容 sitting_good/sitting_bad 用于后续 updateAnalyzeResult 的逻辑
             let postureType = 'unknown';
+            // 优先检查 posture 字段（app.py 返回的新格式）
             if (data.posture === 'good' || data.posture === 'sitting_good') {
                 postureType = 'good';
             } else if (data.posture === 'bad' || data.posture === 'sitting_bad') {
                 postureType = 'bad';
             }
-
-            // 保存分类结果，供分析结果区域使用
-            lastClassifyResult = { posture: postureType, confidence: data.confidence };
-
-            postureStatusElement.classList.remove('status-good', 'status-poor');
-            if (postureType === 'good') {
-                postureStatusElement.classList.add('status-good');
-                postureStatusElement.textContent = '姿态良好';
-            } else if (postureType === 'bad') {
-                postureStatusElement.classList.add('status-poor');
-                postureStatusElement.textContent = '姿态不良';
-            } else {
-                postureStatusElement.textContent = '未知';
+            // 兼容旧的 class 字段
+            else if (data.class === 'good' || data.class === 'sitting_good') {
+                postureType = 'good';
+            } else if (data.class === 'bad' || data.class === 'sitting_bad') {
+                postureType = 'bad';
             }
 
-            confidenceValueElement.textContent = `置信度: ${data.confidence ? data.confidence.toFixed(3) : 'N/A'}`;
+            // 保存分类结果，供分析结果区域使用
+            // 优先使用 data.confidence，如果没有则尝试 data.conf
+            const confidence = data.confidence !== undefined ? data.confidence : (data.conf || 0.0);
+            lastClassifyResult = {
+                posture: postureType,
+                confidence: confidence,
+                analysis: data.analysis // 保存详细分析数据
+            };
         }
 
         function updateAnalyzeResult(data, imgUrl) {
@@ -291,19 +410,47 @@
 
             // 基于分类结果的姿态文本
             let postureText = '未知';
+
+            // 获取 AI 分析出的具体问题
+            const aiIssues = lastClassifyResult.analysis && lastClassifyResult.analysis.detected_issues
+                ? lastClassifyResult.analysis.detected_issues
+                : [];
+
             if (lastClassifyResult.posture === 'good') {
                 postureText = '您的坐姿状态良好，请继续保持！';
             } else if (lastClassifyResult.posture === 'bad') {
-                postureText = '检测到坐姿异常，建议调整姿势';
+                if (aiIssues.length > 0) {
+                    postureText = `检测到坐姿异常（${aiIssues.join('、')}），建议调整姿势`;
+                } else {
+                    postureText = '检测到坐姿异常，建议调整姿势';
+                }
             } else {
                 postureText = '未能识别您的坐姿状态';
             }
 
             const newAnalyzeResult = document.createElement('div');
             newAnalyzeResult.classList.add('analysis-summary');
+
+            // 构建对比分析文案
+            let comparisonHtml = '';
+            // 用户要求几何检测以 posture_status 为准
+            const mpStatus = data.posture_status === '异常' ? '异常' : '正常';
+            const aiStatus = lastClassifyResult.posture === 'bad' ? '异常' : (lastClassifyResult.posture === 'good' ? '正常' : '未知');
+
+            comparisonHtml = `<div style="margin-bottom: 15px; padding: 10px; background: #f0f7ff; border-radius: 5px; font-size: 14px;">
+                <strong>📊 分析对比：</strong><br>
+                • 几何算法检测：<span style="color: ${mpStatus === '异常' ? '#e74c3c' : '#2ecc71'}">${mpStatus}</span>
+                <span style="color: #7f8c8d; font-size: 12px; margin-left: 5px;">(综合判定: ${data.posture_status}, 驼背判定: ${data.hunchback_status})</span><br>
+                • AI 模型评估：<span style="color: ${aiStatus === '异常' ? '#e74c3c' : (aiStatus === '正常' ? '#2ecc71' : '#95a5a6')}">${aiStatus}</span>
+                ${aiStatus !== '未知' && mpStatus !== aiStatus ? '<br><span style="color: #f39c12; font-size: 12px;">(注：当结果不一致时，AI 模型评估通常更具综合性)</span>' : ''}
+            </div>`;
+
             newAnalyzeResult.innerHTML = `
                 <h3>姿势评估</h3>
-                <p>${postureText}${data.hunchback_status === '异常' ? '，存在驼背现象' : ''}</p>
+                ${comparisonHtml}
+                <p style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">
+                    最终结论：${postureText}
+                </p>
 
                 <div class="result-image">
                     <h3>姿势标记图</h3>
@@ -332,13 +479,14 @@
 
 
         // 实时监控按钮功能
-        document.getElementById('start-btn').addEventListener('click', function() {
+        document.getElementById('start-btn').addEventListener('click', function () {
             alert('实时监测已启动！系统将实时分析您的坐姿。');
         });
 
-        document.getElementById('pause-btn').addEventListener('click', function() {
+        document.getElementById('pause-btn').addEventListener('click', function () {
             alert('实时监测已暂停。');
         });
     </script>
 </body>
+
 </html>
