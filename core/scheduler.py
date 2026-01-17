@@ -28,6 +28,36 @@ class Scheduler:
                 return list(users.keys())[-1]
         return ""
 
+    def save_alert_history(self, report):
+        """保存异常报告到历史文件"""
+        history_file = os.path.join(os.path.dirname(__file__), "..", "logs", "alert_history.json")
+        try:
+            os.makedirs(os.path.dirname(history_file), exist_ok=True)
+            
+            history = []
+            if os.path.exists(history_file):
+                try:
+                    with open(history_file, "r", encoding="utf-8") as f:
+                        history = json.load(f)
+                except:
+                    pass
+            
+            new_alert = {
+                "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+                "content": report,
+                "type": "anomaly_alert"
+            }
+            
+            history.append(new_alert)
+            # 保留最近100条
+            if len(history) > 100:
+                history = history[-100:]
+                
+            with open(history_file, "w", encoding="utf-8") as f:
+                json.dump(history, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"保存异常历史失败: {e}")
+
     def start(self):
         thread = threading.Thread(target=self._run, daemon=True)
         thread.start()
@@ -54,6 +84,10 @@ class Scheduler:
                     report = self.reporter.generate_report()
                     # 动态获取最新用户邮箱
                     email_to = self.get_latest_user_email()
+
+                    # 保存异常记录到历史文件
+                    self.save_alert_history(report)
+
                     if email_to:
                         with self.app.app_context():
                             self.emailer.send(report, email_to)

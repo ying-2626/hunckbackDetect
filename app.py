@@ -1,7 +1,7 @@
 import logging
 
 import pandas as pd
-from flask import Flask, jsonify, request, Response, render_template, render_template_string, send_file
+from flask import Flask, jsonify, request, Response, render_template, render_template_string, send_file, send_from_directory
 from flask_mail import Mail
 from flask_cors import CORS
 import cv2
@@ -10,6 +10,7 @@ import os
 import time
 import json
 import hashlib
+import base64
 
 from core.analyzer import Analyzer
 from core.capture import CameraCapture
@@ -21,13 +22,29 @@ from core.classifier import Classifier
 app = Flask(__name__)
 CORS(app)
 mail = Mail(app)
-camera_instance = CameraCapture()  # 全局唯一摄像头实例
-s = Scheduler(mail, app,camera_instance)  # 传入app实例
+
+# Check if running on Vercel
+IS_VERCEL = os.environ.get('VERCEL') == '1'
+
+if not IS_VERCEL:
+    camera_instance = CameraCapture()  # 全局唯一摄像头实例
+    s = Scheduler(mail, app, camera_instance)  # 传入app实例
+else:
+    camera_instance = None
+    s = None
 
 analyzer_instance = Analyzer()  # 全局Analyzer实例，避免重复初始化
 classifier_instance = Classifier()  # 全局Classifier实例
 
 USERS_FILE = os.path.join(os.path.dirname(__file__), "users.json")
+# If on Vercel, users.json might not persist or be writable. 
+# For demo purposes, we might want to use /tmp but it resets.
+# We will keep it as is, but handle write errors silently or warn.
+
+FRONTEND_DIR = os.path.join(os.path.dirname(__file__), "frontend")
+FRONTEND_HTML_DIR = os.path.join(FRONTEND_DIR, "html")
+FRONTEND_CSS_DIR = os.path.join(FRONTEND_DIR, "css")
+FRONTEND_IMG_DIR = os.path.join(FRONTEND_DIR, "img")
 
 def load_users():
     if not os.path.exists(USERS_FILE):
@@ -40,12 +57,50 @@ def load_users():
 
 
 def save_users(users):
-    with open(USERS_FILE, "w", encoding="utf-8") as f:
-        json.dump(users, f, ensure_ascii=False, indent=2)
+    try:
+        with open(USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(users, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Failed to save users: {e}")
 
 
 def hash_pwd(pwd):
     return hashlib.sha256(pwd.encode('utf-8')).hexdigest()
+
+
+@app.route('/', methods=['GET'])
+def index():
+    return send_from_directory(FRONTEND_HTML_DIR, 'index.html')
+
+
+@app.route('/daily_report.html', methods=['GET'])
+def daily_report_page():
+    return send_from_directory(FRONTEND_HTML_DIR, 'daily_report.html')
+
+
+@app.route('/health_guide.html', methods=['GET'])
+def health_guide_page():
+    return send_from_directory(FRONTEND_HTML_DIR, 'health_guide.html')
+
+
+@app.route('/login.html', methods=['GET'])
+def login_page():
+    return send_from_directory(FRONTEND_HTML_DIR, 'login.html')
+
+
+@app.route('/css/<path:filename>', methods=['GET'])
+def frontend_css(filename):
+    return send_from_directory(FRONTEND_CSS_DIR, filename)
+
+
+@app.route('/img/<path:filename>', methods=['GET'])
+def frontend_img(filename):
+    return send_from_directory(FRONTEND_IMG_DIR, filename)
+
+
+@app.route('/favicon.ico', methods=['GET'])
+def favicon():
+    return ('', 204)
 
 
 @app.route('/api/register', methods=['POST'])
@@ -86,6 +141,9 @@ def api_login():
 
 @app.route('/video_feed')
 def video_feed():
+    if IS_VERCEL or camera_instance is None:
+        return "Real-time video feed not available in serverless environment.", 503
+        
     def generate():
         # camera = CameraCapture()  # 不再新建，改为用全局实例
         while True:
@@ -122,23 +180,33 @@ def analyze_image():
     # 进行预处理和姿势分析（不写入日志）
     image, posture_status, hunchback_status, metrics = analyzer_instance.analyze(img, preprocessing=True)
 
-    # 保存标注后图片到 static/tmp 目录
-    tmp_dir = os.path.join(os.path.dirname(__file__), "static", "tmp")
-    if not os.path.exists(tmp_dir):
-        os.makedirs(tmp_dir)
+    # 总是返回 Base64，避免文件写入问题，特别是 Vercel 环境
+    retval, buffer = cv2.imencode('.jpg', image)
+    image_base64 = base64.b64encode(buffer).decode('utf-8')
+    
+    # 为了兼容，如果非 Vercel 环境，还是尝试写入文件（可选，但推荐只用 Base64）
     filename = f"analyzed_{int(time.time())}.jpg"
-    out_path = os.path.join(tmp_dir, filename)
-    cv2.imwrite(out_path, image)
-    print(f"处理后图片保存路径: {out_path}")
+    
+    if not IS_VERCEL:
+        try:
+            tmp_dir = os.path.join(os.path.dirname(__file__), "static", "tmp")
+            if not os.path.exists(tmp_dir):
+                os.makedirs(tmp_dir)
+            out_path = os.path.join(tmp_dir, filename)
+            cv2.imwrite(out_path, image)
+            print(f"处理后图片保存路径: {out_path}")
+        except Exception as e:
+            print(f"Warning: Failed to save image to disk: {e}")
 
-    # 返回分析结果和图片下载链接
+    # 返回分析结果和图片下载链接/Base64
     return jsonify({
         'ear_shoulder': metrics['ear_shoulder'],
         'shoulder_hip': metrics['shoulder_hip'],
         'posture_status': '异常' if posture_status else '正常',
         'hunchback_status': '异常' if hunchback_status else '正常',
         'spine_angle': metrics.get('spine_angle', ''),
-        'filename': filename
+        'filename': filename,
+        'image_base64': image_base64
     })
 
 
@@ -160,10 +228,15 @@ def classify_image():
 
         # 确保返回结果包含姿态和置信度
         if 'class' in result and 'conf' in result:
-            return jsonify({
+            response_data = {
                 'posture': result['class'],  # good 或 bad
                 'confidence': float(result['conf'])  # 置信度
-            })
+            }
+            # 透传详细分析数据
+            if 'analysis' in result:
+                response_data['analysis'] = result['analysis']
+            
+            return jsonify(response_data)
         else:
             return jsonify({'error': "无效的分类结果"}), 500
 
@@ -205,8 +278,24 @@ def daily_report():
         }), 500
 
 
+@app.route('/api/alert_history', methods=['GET'])
+def api_alert_history():
+    """获取异常提醒历史记录"""
+    history_file = os.path.join(os.path.dirname(__file__), "logs", "alert_history.json")
+    if not os.path.exists(history_file):
+        return jsonify([])
+    try:
+        with open(history_file, "r", encoding="utf-8") as f:
+            history = json.load(f)
+        # 倒序返回，最新的在前面
+        return jsonify(history[::-1])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 def start_background_tasks():
-    s.start()
+    if not IS_VERCEL and s:
+        s.start()
 
 
 if __name__ == '__main__':
@@ -214,4 +303,5 @@ if __name__ == '__main__':
         start_background_tasks()
         app.run(host='0.0.0.0', port=SERVER_CONFIG['PORT'])
     finally:
-        camera_instance.release()
+        if camera_instance:
+            camera_instance.release()
