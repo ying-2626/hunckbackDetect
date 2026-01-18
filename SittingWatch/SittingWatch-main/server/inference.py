@@ -6,6 +6,7 @@ from datetime import datetime
 from ultralytics import YOLO
 from copy import deepcopy
 from flask import jsonify
+from db import db  # 引入数据库实例
 
 # YOLO服务类，封装模型加载和推理逻辑
 class YOLOService:
@@ -52,7 +53,10 @@ class RequestHandler:
             return jsonify({"class": "busy", "conf": 0.0})
         
         # 保存临时图片
-        temp_path = "/tmp/temp_image.jpg"
+        # 使用当前目录下的 tmp 文件夹，兼容 Windows
+        temp_dir = os.path.join(os.path.dirname(__file__), 'tmp')
+        os.makedirs(temp_dir, exist_ok=True)
+        temp_path = os.path.join(temp_dir, f"temp_{datetime.now().timestamp()}.jpg")
         image_file.save(temp_path)
         
         # 将请求加入队列
@@ -71,24 +75,42 @@ class RequestHandler:
                     continue
                 self.processing = True
             
-            # 从队列中取出请求
-            image_path, result_queue = self.request_queue.get()
+            try:
+                # 从队列中取出请求
+                image_path, result_queue = self.request_queue.get()
+                
+                # 运行推理
+                class_name, conf, result = self.yolo_service.infer(image_path)
+                
+                # 保存带标注的图片
+                # 使用相对路径 logs 目录
+                base_dir = os.path.dirname(os.path.dirname(__file__))
+                date_str = datetime.now().strftime("date%Y%m%d")
+                save_dir = os.path.join(base_dir, "logs", date_str)
+                os.makedirs(save_dir, exist_ok=True)
+                save_path = os.path.join(save_dir, f"annotated_{datetime.now().strftime('%H%M%S')}.jpg")
+                self.yolo_service.save_annotated_image(result, save_path)
+                
+                # 存入数据库
+                db_data = {
+                    "class": class_name,
+                    "conf": conf
+                }
+                db.add_record(db_data, save_path)
+
+                # 返回结果
+                result_queue.put((class_name, conf))
+                
+                # 清理临时文件
+                if os.path.exists(image_path):
+                    os.remove(image_path)
             
-            # 运行推理
-            class_name, conf, result = self.yolo_service.infer(image_path)
+            except Exception as e:
+                print(f"Error processing queue: {e}")
+                # 确保在异常时也能释放处理状态
+                if 'result_queue' in locals():
+                    result_queue.put(("error", 0.0))
             
-            # 保存带标注的图片
-            date_str = datetime.now().strftime("date%Y%m%d")
-            save_dir = f"/home/whs/PoseDetection/SittingWatch/logs/{date_str}"
-            os.makedirs(save_dir, exist_ok=True)
-            save_path = os.path.join(save_dir, f"annotated_{datetime.now().strftime('%H%M%S')}.jpg")
-            self.yolo_service.save_annotated_image(result, save_path)
-            
-            # 返回结果
-            result_queue.put((class_name, conf))
-            
-            # 清理临时文件
-            os.remove(image_path)
-            
-            with self.lock:
-                self.processing = False
+            finally:
+                with self.lock:
+                    self.processing = False
