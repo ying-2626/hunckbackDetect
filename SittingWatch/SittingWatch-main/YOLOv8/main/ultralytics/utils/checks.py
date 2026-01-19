@@ -203,6 +203,12 @@ def check_font(font='Arial.ttf'):
     if file.exists():
         return file
 
+    # Check Windows system fonts directly
+    if platform.system() == 'Windows' and name.lower() == 'arial.ttf':
+        win_font = Path('C:/Windows/Fonts/arial.ttf')
+        if win_font.exists():
+            return win_font
+
     # Check system fonts
     matches = [s for s in font_manager.findSystemFonts() if font in s]
     if any(matches):
