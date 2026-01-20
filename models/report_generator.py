@@ -1,17 +1,53 @@
 import pandas as pd
+import os
+import json
 from utils.config import LOG_FILE
 from openai import OpenAI
 from datetime import datetime
 
+def load_config():
+    """Load configuration from config.json in the project root."""
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # Traverse up to find config.json
+        d = current_dir
+        while os.path.dirname(d) != d:
+            config_path = os.path.join(d, 'config.json')
+            if os.path.exists(config_path):
+                with open(config_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+            d = os.path.dirname(d)
+    except Exception as e:
+        print(f"Warning: Failed to load config.json: {e}")
+    return {}
+
+CONFIG = load_config()
+
 # 配置移到类外部
-OPENAI_API_KEY = "sk-d43d9bf3286a40e28d86737d22aaa964"
+OPENAI_API_KEY = CONFIG.get("DASHSCOPE_API_KEY")
+if not OPENAI_API_KEY:
+    # 可以在这里抛出异常，或者在调用时处理，但为了防止启动报错，这里打印警告
+    # 不过用户要求严格防止泄露，且要测试模块是否可用，如果没key模块就是不可用的。
+    # 既然是全局变量，抛出异常会导致导入失败。
+    # 我们可以先设为 None，在 Client 初始化时会报错，或者在调用时报错。
+    # OpenAI client 需要 api_key。
+    print("Warning: 'DASHSCOPE_API_KEY' not found in config.json.")
+    # 如果不提供 key，OpenAI client 初始化可能会失败或者默认去环境变量找。
+    # 我们这里显式抛出错误或者让用户知道。
+    # 为了满足“不硬编码”，我们这里就不提供默认值。
+    pass
+
 OPENAI_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
 # 创建全局的 OpenAI 客户端
-OPENAI_CLIENT = OpenAI(
-    api_key=OPENAI_API_KEY,
-    base_url=OPENAI_BASE_URL,
-)
+try:
+    OPENAI_CLIENT = OpenAI(
+        api_key=OPENAI_API_KEY,
+        base_url=OPENAI_BASE_URL,
+    )
+except Exception as e:
+    print(f"Error initializing OpenAI client: {e}")
+    OPENAI_CLIENT = None
 
 
 class ReportGenerator:

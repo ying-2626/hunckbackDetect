@@ -72,7 +72,7 @@ class RAGService:
         if embedding_service:
             self.embedding_service = embedding_service
         else:
-            if os.environ.get("DASHSCOPE_API_KEY") and DASHSCOPE_AVAILABLE:
+            if (DASHSCOPE_API_KEY or os.environ.get("DASHSCOPE_API_KEY")) and DASHSCOPE_AVAILABLE:
                 self.embedding_service = DashScopeEmbeddingService()
             else:
                 self.embedding_service = MockEmbeddingService()
@@ -81,7 +81,7 @@ class RAGService:
         if llm_service:
             self.llm_service = llm_service
         else:
-            if os.environ.get("DASHSCOPE_API_KEY") and DASHSCOPE_AVAILABLE:
+            if (DASHSCOPE_API_KEY or os.environ.get("DASHSCOPE_API_KEY")) and DASHSCOPE_AVAILABLE:
                 self.llm_service = DashScopeLLMService()
             else:
                 self.llm_service = MockLLMService()
