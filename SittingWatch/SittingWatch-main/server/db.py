@@ -80,11 +80,16 @@ class DatabaseManager:
         conn.commit()
         conn.close()
 
-    def get_records(self, limit: int = 50, offset: int = 0) -> List[dict]:
+    def get_records(self, limit: int = 50, offset: int = 0, start_time: datetime.datetime = None) -> List[dict]:
         """获取历史检测记录"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM detection_records ORDER BY timestamp DESC LIMIT ? OFFSET ?', (limit, offset))
+        
+        if start_time:
+            cursor.execute('SELECT * FROM detection_records WHERE timestamp > ? ORDER BY timestamp DESC LIMIT ? OFFSET ?', (start_time, limit, offset))
+        else:
+            cursor.execute('SELECT * FROM detection_records ORDER BY timestamp DESC LIMIT ? OFFSET ?', (limit, offset))
+            
         rows = cursor.fetchall()
         conn.close()
         return [dict(row) for row in rows]

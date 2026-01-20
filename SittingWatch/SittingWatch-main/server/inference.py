@@ -98,6 +98,20 @@ class RequestHandler:
                 }
                 db.add_record(db_data, save_path)
 
+                # --- Preserve posture.csv saving ---
+                try:
+                    # Save to posture.csv in the same directory as this script
+                    csv_path = os.path.join(os.path.dirname(__file__), 'posture.csv')
+                    file_exists = os.path.isfile(csv_path)
+                    with open(csv_path, 'a', newline='') as f:
+                        writer = csv.writer(f)
+                        if not file_exists:
+                            writer.writerow(['timestamp', 'class', 'confidence', 'image_path'])
+                        writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), class_name, conf, save_path])
+                except Exception as e:
+                    print(f"Error saving to posture.csv: {e}")
+                # -----------------------------------
+
                 # 返回结果
                 result_queue.put((class_name, conf))
                 
