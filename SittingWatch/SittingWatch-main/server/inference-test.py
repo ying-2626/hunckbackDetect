@@ -1,13 +1,19 @@
+import os
 from ultralytics import YOLO
 import matplotlib.pyplot as plt
 from PIL import Image
 
+# 获取当前脚本所在目录
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 获取项目根目录 (SittingWatch-main)
+project_root = os.path.dirname(current_dir)
+
 # 1. 加载训练好的模型
-model_path = r"d:\my-git\hunchback\SittingWatch\SittingWatch-main\YOLOv8\runs\detect\train3\weights\best.pt"
+model_path = os.path.join(project_root, "YOLOv8", "runs", "detect", "train3", "weights", "best.pt")
 model = YOLO(model_path)
 
 # 2. 输入图片路径
-image_path = r"d:\my-git\hunchback\SittingWatch\SittingWatch-main\test\test1.jpg"
+image_path = os.path.join(project_root, "test", "test1.jpg")
 
 # 3. 执行推理
 results = model(image_path)
@@ -38,7 +44,7 @@ if len(boxes) > 0:
     plt.imshow(annotated_img[:, :, ::-1])
     plt.axis('off')
     
-    save_path = r"d:\my-git\hunchback\SittingWatch\SittingWatch-main\test\test1_annotated.jpg"
+    save_path = os.path.join(project_root, "test", "test1_annotated.jpg")
     single_result.save(save_path)
     print(f"带标注的图片已保存至: {save_path}")
 else:
