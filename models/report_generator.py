@@ -3,6 +3,7 @@ import os
 import json
 import sqlite3
 from utils.config import LOG_FILE
+from utils.prompts import REPORT_GENERATION_SYSTEM_PROMPT
 from openai import OpenAI
 from datetime import datetime
 
@@ -74,11 +75,8 @@ class ReportGenerator:
             completion = OPENAI_CLIENT.chat.completions.create(
                 model="qwen-plus",
                 messages=[
-                    {"role": "system", "content": "你是一个坐姿分析医学分析者，\
-                                  擅长分析驼背相关的人体节点角度比如肩-髋垂直差和头-肩垂直差并生成报告。"},
-                    {"role": "user", "content": "请根据以下日志生成一份关于坐姿异常的报告,\
-                                  不要使用markdown语法，\
-                                  不要用头-肩垂直差等专业术语，应该用更通俗地表达使用户可以理解" + logs},
+                    {"role": "system", "content": REPORT_GENERATION_SYSTEM_PROMPT},
+                    {"role": "user", "content": "这是今天的监测日志数据，请生成报告：\n" + logs},
                 ],
             )
             return completion.choices[0].message.content
