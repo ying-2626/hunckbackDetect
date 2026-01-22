@@ -1,0 +1,215 @@
+{
+  "nodes": [
+    {
+      "id": "group-client",
+      "type": "group",
+      "x": -800,
+      "y": -200,
+      "width": 500,
+      "height": 900,
+      "label": "End-side (Client)",
+      "color": "1"
+    },
+    {
+      "id": "client-ui",
+      "type": "text",
+      "x": -750,
+      "y": -150,
+      "width": 400,
+      "height": 100,
+      "text": "## Web UI\n`frontend/html/`\nHTML/CSS/JS Interface for user interaction.\nDisplays detection results."
+    },
+    {
+      "id": "client-app",
+      "type": "text",
+      "x": -750,
+      "y": 0,
+      "width": 400,
+      "height": 120,
+      "text": "## Client App (Flask)\n`app.py`\n- Coordinates Capture & Upload\n- `Scheduler` for periodic tasks\n- `Analyzer` for local analysis"
+    },
+    {
+      "id": "client-preproc",
+      "type": "text",
+      "x": -750,
+      "y": 180,
+      "width": 400,
+      "height": 180,
+      "text": "## Preprocessing\n`core/detecter.py`\n1. **HOG Person Detection**: Locates user.\n2. **Canny Edge**: Finds contours.\n3. **Rotation Correction**: `find_upright_rotation` (0/90/180/270).\n4. **Resize/Crop**: Prepares for model."
+    },
+    {
+      "id": "client-camera",
+      "type": "text",
+      "x": -750,
+      "y": 400,
+      "width": 400,
+      "height": 100,
+      "text": "## Camera Capture\n`core/capture.py`\n- OpenCV `VideoCapture`\n- Singleton Pattern\n- Auto-retry mechanism"
+    },
+    {
+      "id": "client-logs",
+      "type": "text",
+      "x": -750,
+      "y": 550,
+      "width": 400,
+      "height": 100,
+      "text": "## Local Logs\n`logs/posture_log.csv`\nRecords detection history locally."
+    },
+    {
+      "id": "group-cloud",
+      "type": "group",
+      "x": -200,
+      "y": -200,
+      "width": 1400,
+      "height": 1500,
+      "label": "Cloud-side (Server)",
+      "color": "5"
+    },
+    {
+      "id": "cloud-api",
+      "type": "text",
+      "x": -150,
+      "y": -150,
+      "width": 400,
+      "height": 150,
+      "text": "## API Gateway (Flask)\n`server/app.py`\n- `/detect` (POST): Main inference endpoint\n- `/report` (GET): Weekly report generation\n- `/add_knowledge`: RAG knowledge update"
+    },
+    {
+      "id": "cloud-queue",
+      "type": "text",
+      "x": -150,
+      "y": 50,
+      "width": 400,
+      "height": 120,
+      "text": "## Request Queue\n`RequestHandler` in `inference.py`\n- Queues incoming images\n- Prevents server overload\n- Sequential processing"
+    },
+    {
+      "id": "cloud-rag",
+      "type": "text",
+      "x": 300,
+      "y": -150,
+      "width": 300,
+      "height": 150,
+      "text": "## RAG Service\n`rag.py`\n- Retrieves health tips\n- Generates LLM-based weekly reports"
+    },
+    {
+      "id": "cloud-db",
+      "type": "text",
+      "x": 650,
+      "y": -150,
+      "width": 300,
+      "height": 150,
+      "text": "## Database\n`db.py`\n- Stores detection results\n- Stores user profiles"
+    },
+    {
+      "id": "group-yolo",
+      "type": "group",
+      "x": -150,
+      "y": 250,
+      "width": 1200,
+      "height": 1000,
+      "label": "YOLOv8 Internal Architecture (Purple)",
+      "color": "6"
+    },
+    {
+      "id": "yolo-service",
+      "type": "text",
+      "x": -100,
+      "y": 300,
+      "width": 300,
+      "height": 80,
+      "text": "## YOLO Service\n`inference.py`\nWrapper around Ultralytics YOLO."
+    },
+    {
+      "id": "yolo-backbone",
+      "type": "text",
+      "x": -100,
+      "y": 420,
+      "width": 300,
+      "height": 500,
+      "text": "## Backbone (CSPDarknet)\nFeature Extractor\n\n1. **P1/2**: Conv 64\n2. **P2/4**: Conv 128 + C2f\n3. **P3/8**: Conv 256 + C2f\n4. **P4/16**: Conv 512 + C2f\n5. **P5/32**: Conv 1024 + C2f + SPPF\n\n*Extracts features at different scales.*"
+    },
+    {
+      "id": "yolo-head",
+      "type": "text",
+      "x": 250,
+      "y": 420,
+      "width": 300,
+      "height": 500,
+      "text": "## Head (PANet + Detect)\nFeature Fusion & Detection\n\n1. **Upsample** P5 -> Concat P4 -> C2f\n2. **Upsample** -> Concat P3 -> C2f (**Small Obj**)\n3. **Conv** -> Concat P4 -> C2f (**Medium Obj**)\n4. **Conv** -> Concat P5 -> C2f (**Large Obj**)\n\n*Bi-directional feature pyramid.*"
+    },
+    {
+      "id": "yolo-detect",
+      "type": "text",
+      "x": 600,
+      "y": 600,
+      "width": 300,
+      "height": 150,
+      "text": "## Detect Layer\n- Anchor-free\n- Decoupled Head (Cls + Box)\n- Outputs: `[x, y, w, h, class, conf]`"
+    },
+    {
+      "id": "group-dataset",
+      "type": "group",
+      "x": 1300,
+      "y": -200,
+      "width": 500,
+      "height": 900,
+      "label": "Dataset & Training",
+      "color": "4"
+    },
+    {
+      "id": "data-aug",
+      "type": "text",
+      "x": 1350,
+      "y": -150,
+      "width": 400,
+      "height": 300,
+      "text": "## Data Augmentation\n`buildDataset/augment_data.py`\n\n**Techniques**:\n- **Flip**: Horizontal\n- **Rotate**: ±10°, ±20°, ±30°\n- **Blur**: Gaussian Kernel (5,5)\n- **Brightness**: ±20, ±40\n- **Contrast**: x0.5, x0.8, x1.2, x1.5\n- **Sharpen**: Custom kernels"
+    },
+    {
+      "id": "data-config",
+      "type": "text",
+      "x": 1350,
+      "y": 200,
+      "width": 400,
+      "height": 150,
+      "text": "## Dataset Config\n`data.yaml`\n- Train/Val/Test split paths\n- Classes: Sitting posture categories"
+    },
+    {
+      "id": "train-config",
+      "type": "text",
+      "x": 1350,
+      "y": 400,
+      "width": 400,
+      "height": 200,
+      "text": "## Training Parameters\n`args.yaml`\n- **Model**: YOLOv8n (Nano)\n- **Epochs**: 1000\n- **Batch Size**: 64\n- **Image Size**: 640\n- **Optimizer**: Auto\n- **Patience**: 100"
+    },
+    {
+      "id": "train-output",
+      "type": "text",
+      "x": 1350,
+      "y": 650,
+      "width": 400,
+      "height": 100,
+      "text": "## Output Weights\n`best.pt`\nThe optimized model file used by the server."
+    }
+  ],
+  "edges": [
+    { "id": "e1", "fromNode": "client-camera", "toNode": "client-preproc", "toSide": "bottom", "fromSide": "top", "color": "1" },
+    { "id": "e2", "fromNode": "client-preproc", "toNode": "client-app", "toSide": "bottom", "fromSide": "top", "color": "1" },
+    { "id": "e3", "fromNode": "client-ui", "toNode": "client-app", "toSide": "top", "fromSide": "bottom", "color": "1" },
+    { "id": "e4", "fromNode": "client-app", "toNode": "client-logs", "toSide": "top", "fromSide": "bottom", "color": "1" },
+    { "id": "e5", "fromNode": "client-app", "toNode": "cloud-api", "toSide": "left", "fromSide": "right", "label": "HTTP POST /detect", "color": "5" },
+    { "id": "e6", "fromNode": "cloud-api", "toNode": "cloud-queue", "toSide": "top", "fromSide": "bottom", "color": "5" },
+    { "id": "e7", "fromNode": "cloud-api", "toNode": "cloud-rag", "toSide": "left", "fromSide": "right", "color": "5" },
+    { "id": "e8", "fromNode": "cloud-api", "toNode": "cloud-db", "toSide": "left", "fromSide": "right", "color": "5" },
+    { "id": "e9", "fromNode": "cloud-queue", "toNode": "yolo-service", "toSide": "top", "fromSide": "bottom", "color": "5" },
+    { "id": "e10", "fromNode": "yolo-service", "toNode": "yolo-backbone", "toSide": "top", "fromSide": "bottom", "label": "Input Image", "color": "6" },
+    { "id": "e11", "fromNode": "yolo-backbone", "toNode": "yolo-head", "toSide": "left", "fromSide": "right", "label": "Features P3, P4, P5", "color": "6" },
+    { "id": "e12", "fromNode": "yolo-head", "toNode": "yolo-detect", "toSide": "left", "fromSide": "right", "label": "Fused Features", "color": "6" },
+    { "id": "e13", "fromNode": "data-aug", "toNode": "data-config", "toSide": "top", "fromSide": "bottom", "color": "4" },
+    { "id": "e14", "fromNode": "data-config", "toNode": "train-config", "toSide": "top", "fromSide": "bottom", "color": "4" },
+    { "id": "e15", "fromNode": "train-config", "toNode": "train-output", "toSide": "top", "fromSide": "bottom", "color": "4" },
+    { "id": "e16", "fromNode": "train-output", "toNode": "yolo-service", "toSide": "right", "fromSide": "left", "label": "Load Weights", "color": "4" }
+  ]
+}
