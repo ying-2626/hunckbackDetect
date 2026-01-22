@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import json
+import sqlite3
 from utils.config import LOG_FILE
 from openai import OpenAI
 from datetime import datetime
@@ -43,6 +44,27 @@ except Exception as e:
 
 
 class ReportGenerator:
+    def __init__(self):
+        self.db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'reports.db')
+        self._init_db()
+
+    def _init_db(self):
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS daily_reports (
+                    date TEXT PRIMARY KEY,
+                    report_content TEXT,
+                    stats_json TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Database initialization failed: {e}")
+
     def generate_report(self):
         """基于视频的实时提醒：生成最近20条日志的报告"""
         try:
@@ -67,6 +89,24 @@ class ReportGenerator:
     def generate_daily_report(self, date_str):
         """根据日期生成当天的报告"""
         try:
+            # 1. 尝试从数据库读取
+            try:
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
+                cursor.execute("SELECT report_content, stats_json FROM daily_reports WHERE date = ?", (date_str,))
+                row = cursor.fetchone()
+                conn.close()
+
+                if row:
+                    print(f"从数据库加载 {date_str} 的报告")
+                    return {
+                        "report": row[0],
+                        "stats": json.loads(row[1]),
+                        "date": date_str
+                    }
+            except Exception as e:
+                print(f"读取数据库失败，尝试重新生成: {e}")
+
             # 读取日志文件
             df = pd.read_csv(LOG_FILE)
 
@@ -75,7 +115,7 @@ class ReportGenerator:
 
             # 转换输入日期并筛选
             target_date = pd.to_datetime(date_str).date()
-            daily_df = df[df['Timestamp'].dt.date == target_date]
+            daily_df = df[df['Timestamp'].dt.date == target_date].copy()
 
             if daily_df.empty:
                 return {
@@ -118,13 +158,27 @@ class ReportGenerator:
             good_posture_ratio = (good / total * 100) if total > 0 else 0
 
             stats = {
-                "avg_ear_shoulder": daily_df['EarShoulderDiff'].mean(),
-                "avg_shoulder_hip": daily_df['ShoulderHipDiff'].mean(),
-                "good_posture_ratio": good_posture_ratio,
-                "posture_changes": len(daily_df),
-                "max_ear_shoulder": daily_df['EarShoulderDiff'].max(),
-                "min_shoulder_hip": daily_df['ShoulderHipDiff'].min(),
+                "avg_ear_shoulder": float(daily_df['EarShoulderDiff'].mean()),
+                "avg_shoulder_hip": float(daily_df['ShoulderHipDiff'].mean()),
+                "good_posture_ratio": float(good_posture_ratio),
+                "posture_changes": int(len(daily_df)),
+                "max_ear_shoulder": float(daily_df['EarShoulderDiff'].max()),
+                "min_shoulder_hip": float(daily_df['ShoulderHipDiff'].min()),
             }
+
+            # 2. 保存到数据库
+            try:
+                conn = sqlite3.connect(self.db_path)
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT OR REPLACE INTO daily_reports (date, report_content, stats_json) VALUES (?, ?, ?)",
+                    (date_str, report, json.dumps(stats))
+                )
+                conn.commit()
+                conn.close()
+                print(f"已保存 {date_str} 的报告到数据库")
+            except Exception as e:
+                print(f"保存数据库失败: {e}")
 
             return {
                 "report": report,
