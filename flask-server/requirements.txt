@@ -8,3 +8,11 @@ mediapipe
 dashscope
 requests
 openai
+pymilvus&gt;=2.3.0
+sentence-transformers&gt;=2.2.2
+rank-bm25&gt;=0.2.2
+beautifulsoup4&gt;=4.12.0
+lxml&gt;=4.9.0
+whoosh&gt;=2.7.4
+python-dotenv&gt;=1.0.0
+jieba&gt;=0.42.1

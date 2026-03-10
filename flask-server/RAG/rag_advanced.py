@@ -3,7 +3,8 @@ import datetime
 import json
 import numpy as np
 from typing import List, Dict, Any, Optional
-from db import db
+
+from .db import db
 
 try:
     import dashscope
@@ -12,25 +13,25 @@ except ImportError:
     DASHSCOPE_AVAILABLE = False
 
 try:
-    from milvus_client import MilvusClient
+    from .milvus_client import MilvusClient
     MILVUS_AVAILABLE = True
 except ImportError:
     MILVUS_AVAILABLE = False
 
 try:
-    from bm25_retriever import BM25Retriever
+    from .bm25_retriever import BM25Retriever
     BM25_AVAILABLE = True
 except ImportError:
     BM25_AVAILABLE = False
 
 try:
-    from retrieval_fusion import RetrievalFusion
+    from .retrieval_fusion import RetrievalFusion
     FUSION_AVAILABLE = True
 except ImportError:
     FUSION_AVAILABLE = False
 
 try:
-    from document_processor import DocumentProcessor
+    from .document_processor import DocumentProcessor
     DOC_PROCESSOR_AVAILABLE = True
 except ImportError:
     DOC_PROCESSOR_AVAILABLE = False
@@ -38,19 +39,19 @@ except ImportError:
 DASHSCOPE_API_KEY = os.environ.get("DASHSCOPE_API_KEY", "")
 
 class EmbeddingService:
-    def get_embedding(self, text: str) -&gt; List[float]:
+    def get_embedding(self, text: str) -> List[float]:
         raise NotImplementedError
 
 class MockEmbeddingService(EmbeddingService):
     def __init__(self, dim=1536):
         self.dim = dim
 
-    def get_embedding(self, text: str) -&gt; List[float]:
+    def get_embedding(self, text: str) -> List[float]:
         vec = np.random.rand(self.dim).astype(np.float32)
         return (vec / np.linalg.norm(vec)).tolist()
 
 class DashScopeEmbeddingService(EmbeddingService):
-    def get_embedding(self, text: str) -&gt; List[float]:
+    def get_embedding(self, text: str) -> List[float]:
         if not DASHSCOPE_AVAILABLE:
             raise ImportError("DashScope not installed")
         resp = dashscope.TextEmbedding.call(
@@ -63,15 +64,15 @@ class DashScopeEmbeddingService(EmbeddingService):
             raise Exception(f"DashScope Error: {resp}")
 
 class LLMService:
-    def generate(self, prompt: str) -&gt; str:
+    def generate(self, prompt: str) -> str:
         raise NotImplementedError
 
 class MockLLMService(LLMService):
-    def generate(self, prompt: str) -&gt; str:
+    def generate(self, prompt: str) -> str:
         return f"【Mock LLM Response】\n收到 Prompt: {prompt[:50]}...\n(请配置 DashScope API Key 以使用真实 LLM)"
 
 class DashScopeLLMService(LLMService):
-    def generate(self, prompt: str) -&gt; str:
+    def generate(self, prompt: str) -> str: 
         if not DASHSCOPE_AVAILABLE:
             raise ImportError("DashScope not installed")
         
@@ -232,7 +233,7 @@ class AdvancedRAGService:
         use_rrf: bool = True,
         use_dedup: bool = True,
         use_cross_encoder: bool = True
-    ) -&gt; List[Dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         vector_results = []
         bm25_results = []
         
@@ -263,7 +264,7 @@ class AdvancedRAGService:
         else:
             return []
 
-    def generate_weekly_report(self, user_id: str = "default", days: int = 7) -&gt; str:
+    def generate_weekly_report(self, user_id: str = "default", days: int = 7) -> str:
         now = datetime.datetime.now()
         start_time = now - datetime.timedelta(days=days)
         
@@ -290,7 +291,7 @@ class AdvancedRAGService:
 
         total_count = len(recent_records)
         bad_count = sum(1 for r in recent_records if r['class_name'] == 'sitting_bad')
-        bad_ratio = (bad_count / total_count) * 100 if total_count &gt; 0 else 0
+        bad_ratio = (bad_count / total_count) * 100 if total_count > 0 else 0
         
         summary_text = f"本周共检测 {total_count} 次，不良坐姿 {bad_count} 次，占比 {bad_ratio:.1f}%。"
         
