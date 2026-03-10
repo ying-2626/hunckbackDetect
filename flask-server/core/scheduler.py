@@ -3,8 +3,8 @@ import time, threading
 
 from .analyzer import Analyzer
 from models.report_generator import ReportGenerator
-from .emailer import Emailer
-from .config import SAMPLING_INTERVAL, ANOMALY_WINDOW, ANOMALY_THRESHOLD
+from utils.emailer import Emailer
+from utils.config import SAMPLING_INTERVAL, ANOMALY_WINDOW, ANOMALY_THRESHOLD
 import os
 import json
 

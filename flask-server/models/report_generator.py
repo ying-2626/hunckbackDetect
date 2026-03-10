@@ -3,15 +3,17 @@ import os
 import json
 import sqlite3
 from .config import LOG_FILE
-from .prompts import REPORT_GENERATION_SYSTEM_PROMPT
+from .prompts import (
+    REPORT_GENERATION_SYSTEM_PROMPT,
+    REPORT_GENERATION_WITH_RAG_PROMPT,
+    REPORT_GENERATION_WITH_HISTORY_PROMPT
+)
 from openai import OpenAI
-from datetime import datetime
+from datetime import datetime, timedelta
 
 def load_config():
-    """Load configuration from config.json in the project root."""
     try:
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        # Traverse up to find config.json
         d = current_dir
         while os.path.dirname(d) != d:
             config_path = os.path.join(d, 'config.json')
@@ -25,7 +27,6 @@ def load_config():
 
 CONFIG = load_config()
 
-# 配置移到类外部
 OPENAI_API_KEY = CONFIG.get("DASHSCOPE_API_KEY")
 if not OPENAI_API_KEY:
     print("Warning: 'DASHSCOPE_API_KEY' not found in config.json.")
@@ -33,7 +34,6 @@ if not OPENAI_API_KEY:
 
 OPENAI_BASE_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
-# 创建全局的 OpenAI 客户端
 try:
     OPENAI_CLIENT = OpenAI(
         api_key=OPENAI_API_KEY,
@@ -48,7 +48,8 @@ class ReportGenerator:
     def __init__(self):
         self.db_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'reports.db')
         self._init_db()
-
+        self.rag_service = None
+    
     def _init_db(self):
         try:
             conn = sqlite3.connect(self.db_path)
@@ -61,13 +62,105 @@ class ReportGenerator:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS daily_stats (
+                    date TEXT PRIMARY KEY,
+                    good_posture_ratio REAL,
+                    avg_ear_shoulder REAL,
+                    avg_shoulder_hip REAL,
+                    posture_changes INTEGER,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
             conn.commit()
             conn.close()
         except Exception as e:
             print(f"Database initialization failed: {e}")
+    
+    def _get_rag_service(self):
+        if self.rag_service is None:
+            try:
+                from flask import has_request_context, current_app
+                if has_request_context():
+                    self.rag_service = current_app.extensions['hunchback'].get('rag_service')
+            except:
+                pass
+        return self.rag_service
+    
+    def _search_rag_knowledge(self, query: str, top_k: int = 3):
+        rag = self._get_rag_service()
+        if rag:
+            try:
+                results = rag.search_knowledge(query, top_k=top_k)
+                return "\n".join([f"- {r['content']}" for r in results])
+            except Exception as e:
+                print(f"RAG search failed: {e}")
+        return None
+    
+    def _get_user_trend(self, days: int = 7):
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            end_date = datetime.now().date()
+            start_date = end_date - timedelta(days=days)
+            
+            cursor.execute('''
+                SELECT date, good_posture_ratio 
+                FROM daily_stats 
+                WHERE date BETWEEN ? AND ?
+                ORDER BY date
+            ''', (start_date.isoformat(), end_date.isoformat()))
+            
+            rows = cursor.fetchall()
+            conn.close()
+            
+            if len(rows) &lt; 2:
+                return None
+            
+            ratios = [r[1] for r in rows]
+            avg_ratio = sum(ratios) / len(ratios)
+            first_ratio = ratios[0]
+            last_ratio = ratios[-1]
+            
+            if last_ratio &gt; first_ratio + 5:
+                trend = "improving"
+            elif last_ratio &lt; first_ratio - 5:
+                trend = "declining"
+            else:
+                trend = "stable"
+            
+            return {
+                "days": days,
+                "avg_good_ratio": avg_ratio,
+                "trend": trend,
+                "first_ratio": first_ratio,
+                "last_ratio": last_ratio
+            }
+        except Exception as e:
+            print(f"Get trend failed: {e}")
+            return None
+    
+    def _save_daily_stats(self, date_str: str, stats: dict):
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT OR REPLACE INTO daily_stats 
+                (date, good_posture_ratio, avg_ear_shoulder, avg_shoulder_hip, posture_changes)
+                VALUES (?, ?, ?, ?, ?)
+            ''', (
+                date_str,
+                stats.get('good_posture_ratio', 0),
+                stats.get('avg_ear_shoulder', 0),
+                stats.get('avg_shoulder_hip', 0),
+                stats.get('posture_changes', 0)
+            ))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            print(f"Save daily stats failed: {e}")
 
     def generate_report(self):
-        """基于视频的实时提醒：生成最近20条日志的报告"""
         try:
             df = pd.read_csv(LOG_FILE)
             logs = df.tail(20).to_string(index=False)
@@ -85,9 +178,7 @@ class ReportGenerator:
             return f"生成报告失败: {str(e)}"
 
     def generate_daily_report(self, date_str):
-        """根据日期生成当天的报告"""
         try:
-            # 1. 尝试从数据库读取
             try:
                 conn = sqlite3.connect(self.db_path)
                 cursor = conn.cursor()
@@ -105,13 +196,8 @@ class ReportGenerator:
             except Exception as e:
                 print(f"读取数据库失败，尝试重新生成: {e}")
 
-            # 读取日志文件
             df = pd.read_csv(LOG_FILE)
-
-            # 转换时间戳列
             df['Timestamp'] = pd.to_datetime(df['Timestamp'])
-
-            # 转换输入日期并筛选
             target_date = pd.to_datetime(date_str).date()
             daily_df = df[df['Timestamp'].dt.date == target_date].copy()
 
@@ -122,23 +208,6 @@ class ReportGenerator:
                     "date": date_str
                 }
 
-
-            # 生成报告内容
-            logs = daily_df.to_string(index=False)
-
-            completion = OPENAI_CLIENT.chat.completions.create(
-                model="qwen-plus",
-                messages=[
-                    {"role": "system", "content": "你是一个坐姿分析医学分析者，\
-                                              擅长分析驼背相关的人体节点角度比如肩-髋垂直差和头-肩垂直差并生成报告。"},
-                    {"role": "user", "content": "请根据以下日志生成一份关于坐姿异常的报告,\
-                                              不要使用markdown语法，\
-                                              不要用头-肩垂直差等专业术语，应该用更通俗地表达使用户可以理解" + logs},
-                ],
-            )
-            report = completion.choices[0].message.content
-
-            # --- 修正 PostureStatus 字段为布尔类型 ---
             def to_bool(val):
                 if isinstance(val, bool):
                     return val
@@ -149,11 +218,9 @@ class ReportGenerator:
                 return False
 
             daily_df['PostureStatus'] = daily_df['PostureStatus'].apply(to_bool)
-
-            # 统计正常（False）为良好坐姿
             total = ((daily_df['PostureStatus'] == False) | (daily_df['PostureStatus'] == True)).sum()
             good = (daily_df['PostureStatus'] == False).sum()
-            good_posture_ratio = (good / total * 100) if total > 0 else 0
+            good_posture_ratio = (good / total * 100) if total &gt; 0 else 0
 
             stats = {
                 "avg_ear_shoulder": float(daily_df['EarShoulderDiff'].mean()),
@@ -164,7 +231,45 @@ class ReportGenerator:
                 "min_shoulder_hip": float(daily_df['ShoulderHipDiff'].min()),
             }
 
-            # 2. 保存到数据库
+            self._save_daily_stats(date_str, stats)
+
+            system_prompt = REPORT_GENERATION_SYSTEM_PROMPT
+            
+            rag_context = None
+            if good_posture_ratio &lt; 70:
+                rag_context = self._search_rag_knowledge(
+                    f"不良坐姿比例 {good_posture_ratio:.1f}% 如何改善坐姿"
+                )
+            elif good_posture_ratio &lt; 85:
+                rag_context = self._search_rag_knowledge("如何保持正确坐姿")
+            
+            if rag_context:
+                system_prompt = REPORT_GENERATION_WITH_RAG_PROMPT.format(
+                    base_prompt=system_prompt,
+                    rag_context=rag_context
+                )
+
+            history_trend = self._get_user_trend(days=7)
+            if history_trend:
+                history_context = f"过去7天平均良好坐姿比例: {history_trend['avg_good_ratio']:.1f}%\n"
+                history_context += f"趋势: {history_trend['trend']}\n"
+                history_context += f"起始比例: {history_trend['first_ratio']:.1f}%\n"
+                history_context += f"最新比例: {history_trend['last_ratio']:.1f}%"
+                system_prompt = REPORT_GENERATION_WITH_HISTORY_PROMPT.format(
+                    base_prompt=system_prompt,
+                    history_context=history_context
+                )
+
+            logs = daily_df.to_string(index=False)
+            completion = OPENAI_CLIENT.chat.completions.create(
+                model="qwen-plus",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": "请根据以下日志生成一份关于坐姿异常的报告，不要使用markdown语法，不要用头-肩垂直差等专业术语，应该用更通俗地表达使用户可以理解" + logs},
+                ],
+            )
+            report = completion.choices[0].message.content
+
             try:
                 conn = sqlite3.connect(self.db_path)
                 cursor = conn.cursor()
